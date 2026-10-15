@@ -17,7 +17,7 @@ class BaseManager {
     const rows = await this.client.rest.get(query(this.table, { select: '*', id: eq(id), limit: '1' })); return rows?.[0] ? this._add(rows[0]) : null;
   }
 }
-class UserManager extends BaseManager { constructor(client) { super(client, User, 'profiles'); } }
+class UserManager extends BaseManager { constructor(client) { super(client, User, 'profiles'); } createDM(user, options) { return this.client.dms.create(user, options); } send(user, content) { return this.client.dms.send(user, content); } }
 class ChannelManager extends BaseManager {
   constructor(client) { super(client, Channel, 'channels'); }
   async fetchGuild(guild) { const id = resolveId(guild); const rows = await this.client.rest.get(query('channels', { select: '*', server_id: eq(id) })); return new Collection((rows ?? []).map(row => { const channel = this._add(row); return [channel.id, channel]; })); }
@@ -85,4 +85,4 @@ class MessageManager extends BaseManager {
   }
 }
 const { GuildChannelManager } = require('./customization')({ UserManager, ChannelManager, GuildManager, BaseManager, resolveId, query, Collection, User, ClientUser, Channel });
-module.exports = { UserManager, ChannelManager, GuildManager, GuildChannelManager, GuildMemberManager: require('./GuildMemberManager'), MessageManager, resolveId };
+module.exports = { DMManager: require('./DMManager'), UserManager, ChannelManager, GuildManager, GuildChannelManager, GuildMemberManager: require('./GuildMemberManager'), MessageManager, resolveId };

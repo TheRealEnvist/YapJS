@@ -14,7 +14,8 @@ class User extends Base {
     return this;
   }
   displayAvatarURL() { return this.avatar ? `${this.client.rest.baseUrl}/storage/v1/object/public/avatars/${this.avatar.split('/').map(encodeURIComponent).join('/')}` : null; }
-  async createDM() { const id = await this.client.rest.rpc('get_or_create_dm', { other: this.id }); if (typeof id !== 'string') throw new Error('Unexpected DM response'); return this.client.channels.fetch(id, { force: true }); }
+  get dmChannel() { return this.client.dms._find(this.id) ?? null; }
+  createDM(options) { return this.client.dms.create(this.id, options); }
   async send(content) { return (await this.createDM()).send(content); }
   toString() { return `@${this.username || this.id}`; }
   toJSON() { return { id: this.id, username: this.username, displayName: this.displayName, avatar: this.avatar, bio: this.bio, customStatus: this.customStatus, pronouns: this.pronouns, accentColor: this.accentColor, accentColor2: this.accentColor2, banner: this.banner, bot: this.bot ?? false }; }
@@ -23,7 +24,7 @@ class Channel extends Base {
   constructor(client, data) { super(client, data); const { MessageManager } = require('../managers'); this.messages = new MessageManager(this); }
   _patch(data) { super._patch(data); for (const [key, value] of Object.entries({ name: data.name, type: data.kind, guildId: data.server_id, topic: data.topic, position: data.position, memberIds: data.memberIds, noImages: data.no_images, readOnly: data.read_only, slowmode: data.slowmode, private: data.private })) if (value !== undefined) this[key] = value; return this; }
   get guild() { return this.guildId ? this.client.guilds.cache.get(this.guildId) ?? null : null; }
-  isDMBased() { return !this.guildId; }
+  isDMBased() { return !this.guildId && (this.type === 'dm' || this.type === 'group' || Array.isArray(this.memberIds)); }
   isTextBased() { return this.type !== 'voice'; }
   async send(content) { if (!this.isTextBased()) throw new TypeError('Cannot send a text message to a voice channel.'); return this.messages.create(content); }
   createMessageCollector(options) { const { MessageCollector } = require('../collectors'); return new MessageCollector(this, options); }

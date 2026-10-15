@@ -1,28 +1,41 @@
 {
   "name": "yapperjs",
-  "version": "0.6.0",
-  "description": "A discord.js-style Node.js client for Yapper",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "version": "0.7.0",
+  "description": "An unofficial, dependency-free Node.js library for building Yapper bots",
   "type": "commonjs",
   "engines": {
     "node": ">=22"
   },
-  "files": [
-    "*.js",
-    "*.d.ts",
-    "auth",
-    "global",
-    "managers",
-    "realtime",
-    "rest",
-    "structures",
-    "util",
-    "presence",
-    "reactions",
-    "collectors",
-    "commands",
-    "interactions"
+  "license": "MIT",
+  "keywords": [
+    "yapper",
+    "bot",
+    "sdk",
+    "chat"
   ],
-  "private": true
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheRealEnvist/YapperJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TheRealEnvist/YapperJS/issues"
+  },
+  "homepage": "https://github.com/TheRealEnvist/YapperJS#readme",
+  "sideEffects": false,
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js",
+      "default": "./index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "**/*.js",
+    "**/*.mjs",
+    "**/*.d.ts"
+  ]
 }

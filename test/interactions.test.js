@@ -169,7 +169,7 @@ test('reaction role configuration uses verified pairs and seeds own reactions', 
 
 test('bundled commands load and dispatch through the real router', async () => {
   const { client, calls, incoming } = setup(); await client.login(session);
-  client.commands.load(path.join(__dirname, '../bot/commands')).addHelpCommand();
+  client.commands.load(path.join(__dirname, '../examples/bot/commands')).addHelpCommand();
   for (const name of ['ping', 'help', 'avatar', 'userinfo', 'serverinfo', 'menu', 'pages', 'confirm', 'poll', 'ask']) assert.ok(client.commands.resolve(name));
   await client.commands.handle(incoming('!ping'));
   assert.equal(calls.filter(call => call.options.method === 'POST' && call.url.pathname.endsWith('/messages')).at(-1).body.content, 'Pong!');
@@ -177,7 +177,7 @@ test('bundled commands load and dispatch through the real router', async () => {
   assert.equal(client._collectorHub.active.size, 1); client.destroy(); assert.equal(client._collectorHub.active.size, 0);
 });
 test('ask command receives only the requesting user in the originating channel', async () => {
-  const { client, incoming, calls } = setup(); await client.login(session); client.commands.load(path.join(__dirname, '../bot/commands'));
+  const { client, incoming, calls } = setup(); await client.login(session); client.commands.load(path.join(__dirname, '../examples/bot/commands'));
   const pending = client.commands.handle(incoming('!ask')); await tick();
   client.emit(Events.MessageCreate, incoming('wrong user', 'bob')); client.emit(Events.MessageCreate, incoming('My reply'));
   assert.equal(await pending, true);

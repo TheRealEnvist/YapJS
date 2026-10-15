@@ -1,14 +1,47 @@
 {
-  "name": "yapper-bot",
-  "version": "0.6.0",
-  "private": true,
+  "name": "yapperjs",
+  "version": "0.7.0",
+  "description": "An unofficial, dependency-free Node.js library for building Yapper bots",
   "type": "commonjs",
-  "main": "YapperJS/index.js",
-  "scripts": {
-    "start": "node bot/bot.js",
-    "test": "node --test test/*.test.js"
-  },
   "engines": {
     "node": ">=22"
+  },
+  "license": "MIT",
+  "keywords": [
+    "yapper",
+    "bot",
+    "sdk",
+    "chat"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheRealEnvist/YapperJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TheRealEnvist/YapperJS/issues"
+  },
+  "homepage": "https://github.com/TheRealEnvist/YapperJS#readme",
+  "sideEffects": false,
+  "main": "./YapperJS/index.js",
+  "types": "./YapperJS/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./YapperJS/index.d.ts",
+      "import": "./YapperJS/index.mjs",
+      "require": "./YapperJS/index.js",
+      "default": "./YapperJS/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "YapperJS/**/*.js",
+    "YapperJS/**/*.mjs",
+    "YapperJS/**/*.d.ts",
+    "YapperJS/package.json"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "example": "node examples/bot/bot.js",
+    "pack:check": "node scripts/check-package.js"
   }
 }

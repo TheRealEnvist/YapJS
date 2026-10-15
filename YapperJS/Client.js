@@ -4,7 +4,7 @@ const path = require('node:path');
 const REST = require('./rest/REST');
 const AuthManager = require('./auth/AuthManager');
 const Gateway = require('./realtime/Gateway');
-const { UserManager, ChannelManager, GuildManager } = require('./managers');
+const { UserManager, ChannelManager, GuildManager, DMManager } = require('./managers');
 const { FileSessionStore } = require('./auth/stores');
 const { User, Channel, Guild, GuildMember, Message } = require('./structures');
 const { Events } = require('./util/constants');
@@ -25,8 +25,9 @@ class Client extends EventEmitter {
     if (!Number.isInteger(messageCacheMaxSize) || messageCacheMaxSize < 1) throw new TypeError('messageCacheMaxSize must be a positive integer.');
     this.options = Object.freeze({ realtime: options.realtime !== false, messageCacheMaxSize, presence: options.presence === undefined ? undefined : validatePresence(options.presence) });
     this.rest = new REST(this, options); this.auth = new AuthManager(this, options); this.gateway = new Gateway(this, options); this.presence = new PresenceManager(this, options.presenceInterval);
-    this.users = new UserManager(this); this.channels = new ChannelManager(this); this.guilds = new GuildManager(this); this.servers = this.guilds;
+    this.users = new UserManager(this); this.channels = new ChannelManager(this); this.guilds = new GuildManager(this); this.servers = this.guilds; this.dms = new DMManager(this);
     Object.defineProperty(this, '_authUser', { value: null, writable: true });
+    Object.defineProperty(this, '_channelEvents', { value: new Map() });
     Object.defineProperty(this, '_messageDeletes', { value: new Set() });
     Object.defineProperty(this, '_roleDeletes', { value: new Set() });
     Object.defineProperty(this, '_pendingGuilds', { value: new Map() });
@@ -108,11 +109,17 @@ class Client extends EventEmitter {
     this._roleDeletes.clear(); this.gateway.syncTopics();
     return data;
   }
+  createDM(user, options) { return this.dms.create(user, options); }
+  sendDM(user, content) { return this.dms.send(user, content); }
+  _invalidateSession(metadata) {
+    this.#ready = false; this.readyAt = null; this.gateway.destroy(); this.presence.destroy();
+    this.emit(Events.SessionInvalidated, metadata);
+  }
   setPresence(options) { return this.presence.setPresence(options); }
   refreshToken() { return this.auth.refresh(); }
   _messageManager(channelId) { let channel = this.channels.cache.get(channelId); if (!channel) channel = this.channels._add({ id: channelId }); return channel.messages; }
-  _dispatch(event, payload) {
-    this.emit(Events.Raw, event, payload);
+  _dispatch(event, payload, hydrated = false) {
+    if (!hydrated) this.emit(Events.Raw, event, payload);
     const { table, operation, record, old_record: oldRecord } = payload;
     if (event === 'typing') { this.emit(Events.TypingStart, payload); return; }
     const row = operation === 'DELETE' ? oldRecord : record;
@@ -125,6 +132,7 @@ class Client extends EventEmitter {
       if (operation === 'DELETE' && this._messageDeletes.has(row.id)) return;
       const channelId = row.channel_id || this.channels.cache.find(channel => channel.messages.cache.has(row.id))?.id;
       if (!channelId) return;
+      if (!hydrated && (!this.channels.cache.has(channelId) || this._channelEvents.has(channelId))) { this._queueChannelEvent(channelId, event, payload); return; }
       const manager = this._messageManager(channelId);
       if (operation === 'INSERT') {
         this._messageDeletes.delete(row.id);
@@ -158,6 +166,23 @@ class Client extends EventEmitter {
       const updated = manager._add(row); if (updateEvent) this.emit(updateEvent, previous, updated);
     } else if (operation === 'INSERT' && createEvent) this.emit(createEvent, manager._add(row));
     this.gateway.syncTopics();
+  }
+  _queueChannelEvent(channelId, event, payload) {
+    const existing = this._channelEvents.get(channelId);
+    if (existing) { existing.push({ event, payload }); return; }
+    const queue = [{ event, payload }]; this._channelEvents.set(channelId, queue);
+    Promise.resolve().then(async () => {
+      try {
+        const channel = await this.channels.fetch(channelId, { force: true });
+        if (this.#destroyed) { this.channels.cache.delete(channelId); return; }
+        if (!channel) throw new YapperError('Message channel is unavailable.', 'UNKNOWN_CHANNEL');
+        if (!channel.guildId) await this.dms._hydrate(channel);
+      } catch (error) { if (!this.#destroyed) this._emitError(error); }
+      if (!this.#destroyed) for (const entry of queue) {
+        try { this._dispatch(entry.event, entry.payload, true); }
+        catch { this._emitError(new YapperError('Invalid gateway event.', 'GATEWAY_EVENT_ERROR')); }
+      }
+    }).finally(() => { if (this._channelEvents.get(channelId) === queue) this._channelEvents.delete(channelId); });
   }
   _removeMessage(message) {
     if (this.#destroyed || this._messageDeletes.has(message.id)) return;
@@ -276,13 +301,13 @@ class Client extends EventEmitter {
   [captureRejectionSymbol]() { this._emitError(new YapperError('An asynchronous event listener rejected.', 'LISTENER_ERROR')); }
   destroy() {
     if (this.#destroyed) return;
-    this.#destroyed = true; this.#ready = false; this._memberDeletes.clear(); this._pendingGuilds.clear(); this._messageDeletes.clear(); this._roleDeletes.clear(); this.commands.destroy(); this._collectorHub.destroy(); this._reactionRows.clear(); this._partialMessages.clear(); this.#reactionEvents.clear(); this.#reactionDeletes.clear(); this.gateway.destroy(); this.presence.destroy(); this.auth.destroy(); this._authUser = null; this.user = null; this.readyAt = null;
+    this.#destroyed = true; this.#ready = false; this._memberDeletes.clear(); this._pendingGuilds.clear(); this._channelEvents.clear(); this._messageDeletes.clear(); this._roleDeletes.clear(); this.commands.destroy(); this._collectorHub.destroy(); this._reactionRows.clear(); this._partialMessages.clear(); this.#reactionEvents.clear(); this.#reactionDeletes.clear(); this.gateway.destroy(); this.presence.destroy(); this.auth.destroy(); this._authUser = null; this.user = null; this.readyAt = null;
     this.users.cache.clear(); this.channels.cache.clear(); this.guilds.cache.clear(); this.#seenMessages.clear(); this.bootstrapData = null; this._members = {};
     this.emit(Events.Destroyed);
   }
   toJSON() { return { ready: this.isReady(), user: this.user?.toJSON() ?? null, readyAt: this.readyAt, guildCount: this.guilds.cache.size, channelCount: this.channels.cache.size }; }
   static async create(yapperValue, apiKey, insecureLogin = false) {
-    const sessionStore = insecureLogin ? new FileSessionStore(path.join(__dirname, 'session.json')) : undefined;
+    const sessionStore = insecureLogin ? new FileSessionStore(path.join(process.cwd(), '.data', 'yapper-session.json')) : undefined;
     const client = new this({ apiKey, sessionStore, realtime: false });
     // Preserve the old opt-in behavior: prefer the latest locally saved pair.
     const saved = sessionStore ? await sessionStore.load() : null;

@@ -27,7 +27,9 @@ class REST {
       if (token === this.client.auth.accessToken) await this.client.auth.refresh();
       return this.request(route, { method, body, headers, auth, retry: false });
     }
-    const text = response.status === 204 ? '' : await response.text();
+    let text;
+    try { text = response.status === 204 ? '' : await response.text(); }
+    catch { throw new YapperAPIError(0, method, route, 'NETWORK_ERROR'); }
     let data = null;
     if (text) { try { data = JSON.parse(text); } catch { if (response.ok) throw new YapperAPIError(response.status, method, route, 'INVALID_JSON'); } }
     if (!response.ok) {

@@ -37,6 +37,8 @@ export interface ClientOptions {
   autoRefresh?: boolean;
   /** Milliseconds before expiry; defaults to 60,000. */
   refreshMargin?: number;
+  /** Initial and maximum automatic refresh retry delays (ms), defaults 5000/300000. */
+  refreshRetryDelay?: number; refreshRetryMaxDelay?: number;
   requestTimeout?: number;
   gatewayTimeout?: number;
   messageCacheMaxSize?: number;
@@ -49,6 +51,7 @@ export interface ClientOptions {
 }
 export const Events: Readonly<{
   ClientReady: 'clientReady'; Ready: 'ready'; Error: 'error'; Warn: 'warn';
+  RefreshRetry: 'refreshRetry'; SessionInvalidated: 'sessionInvalidated';
   TokenRefresh: 'tokenRefresh'; SessionUpdate: 'sessionUpdate';
   MessageReactionAdd: 'messageReactionAdd'; MessageReactionRemove: 'messageReactionRemove';
   CommandStart: 'commandStart'; CommandFinish: 'commandFinish'; CommandError: 'commandError'; CommandRejected: 'commandRejected'; TypingStart: 'typingStart';
@@ -65,6 +68,8 @@ export interface ClientEvents {
   clientReady: [client: Client & { user: ClientUser; readyAt: Date }];
   ready: [client: Client & { user: ClientUser; readyAt: Date }];
   error: [error: Error]; warn: [warning: string];
+  refreshRetry: [metadata: { attempt: number; retryIn: number; code: string; status: number | null }];
+  sessionInvalidated: [metadata: { code: string; status: number | null }];
   tokenRefresh: [metadata: { expiresAt: number | null }];
   sessionUpdate: [metadata: { expiresAt: number | null }];
   messageCreate: [message: Message]; messageUpdate: [oldMessage: Message | null, newMessage: Message]; messageDelete: [message: Message];
@@ -112,6 +117,7 @@ export class Client {
   readyAt: Date | null;
   bootstrapData: Record<string, any> | null;
   users: UserManager;
+  dms: DMManager;
   channels: ChannelManager;
   guilds: GuildManager;
   servers: GuildManager;
@@ -119,6 +125,7 @@ export class Client {
   presence: PresenceManager;
   commands: CommandManager;
   auth: {
+    readonly requiresLogin: boolean;
     readonly accessToken: string | null; readonly refreshToken: string | null; readonly expiresAt: number | null;
     getAccessToken(): Promise<string>; getSession(): Promise<Session>; refresh(): Promise<Session>;
   };
@@ -129,6 +136,8 @@ export class Client {
     unwatch(channel: string | { id: string }): void;
   };
   login(session?: SessionInput): Promise<this>;
+  createDM(user: string | { id: string }, options?: { force?: boolean }): Promise<Channel>;
+  sendDM(user: string | { id: string }, content: string | MessageOptions): Promise<Message>;
   setPresence(options: PresenceOptions): Promise<PresenceManager>;
   refreshToken(legacyClient?: Client): Promise<Session>;
   fetchBootstrap(): Promise<Record<string, any>>;
@@ -146,13 +155,15 @@ export class User {
   readonly client: Client; id: string; username?: string; displayName?: string | null; avatar?: string | null; bio?: string; bot?: boolean;
   customStatus?: string | null; pronouns?: string | null; accentColor?: string | null; accentColor2?: string | null; banner?: string | null;
   displayAvatarURL(): string | null;
-  createDM(): Promise<Channel | null>;
+  readonly dmChannel: Channel | null;
+  createDM(options?: { force?: boolean }): Promise<Channel>;
   send(content: string | MessageOptions): Promise<Message>;
   toJSON(): Record<string, unknown>;
 }
 export class Channel {
   readonly client: Client; id: string; name?: string; type?: string; guildId?: string | null; topic?: string;
   readonly guild: Guild | null;
+  memberIds?: string[];
   messages: MessageManager;
   noImages?: boolean; readOnly?: boolean; slowmode?: number; private?: boolean; position?: number;
   isDMBased(): boolean; isTextBased(): boolean;
@@ -230,6 +241,8 @@ export class Message {
   toJSON(): Record<string, unknown>;
 }
 export class UserManager {
+  createDM(user: string | { id: string }, options?: { force?: boolean }): Promise<Channel>;
+  send(user: string | { id: string }, content: string | MessageOptions): Promise<Message>;
   cache: Collection<string, User>;
   resolve(value: string | User): User | null;
   fetch(): Promise<Collection<string, User>>;
@@ -507,4 +520,13 @@ export class GuildBanManager {
 }
 export class MessageBulkDeleteError extends YapperError {
   deleted: Collection<string, Message>; failedId: string; cause: Error;
+}
+
+export class DMManager {
+  readonly client: Client; readonly cache: Collection<string, Channel>;
+  resolve(channel: string | Channel): Channel | null;
+  create(user: string | { id: string }, options?: { force?: boolean }): Promise<Channel>;
+  fetch(): Promise<Collection<string, Channel>>;
+  fetch(channel: string | { id: string }): Promise<Channel | null>;
+  send(user: string | { id: string }, content: string | MessageOptions): Promise<Message>;
 }

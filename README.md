@@ -1,14 +1,43 @@
 # YapperJS
 
-A dependency-free Node.js 22+ client with a discord.js-style API for Yapper.
+An unofficial, MIT-licensed Node.js 22+ library for building Yapper bots, with a
+discord.js-style API and no runtime dependencies. Importing it starts no bot,
+loads no .env file, registers no commands, and opens no connection. You write the
+bot and call `client.login()` explicitly.
+
+## Install
+
+From another project, install your local checkout or the generated package:
+
+```sh
+npm install /absolute/path/to/YapperJS
+# Or a shared tarball produced by `npm pack` from the repository root:
+npm install ./yapperjs-0.7.0.tgz
+```
+
+The local path above is the repository root (the folder with this README and
+package.json). Git installation is available after these changes are pushed:
+`npm install github:TheRealEnvist/YapperJS` (pin a tag/commit for repeatable builds).
+This change does not publish anything to npm or push the repository. Only use
+`npm install yapperjs` after the maintainer has published this package under that
+name; choose an available scoped name if necessary.
+
+CommonJS and native ESM both expose named exports, with TypeScript declarations:
+
+```js
+const { Client, Events, FileSessionStore } = require('yapperjs');
+// Or in an ES module:
+// import { Client, Events, FileSessionStore } from 'yapperjs';
+```
+
+## Your bot
 
 ```js
 const path = require('node:path');
-const { Client, Events, FileSessionStore } = require('./YapperJS');
+const { Client, Events, FileSessionStore } = require('yapperjs');
 
-const client = new Client({
-  sessionStore: new FileSessionStore(path.join(__dirname, 'YapperJS/session.json')),
-});
+const sessionStore = new FileSessionStore(path.join(__dirname, '.data/yapper-session.json'));
+const client = new Client({ sessionStore });
 
 client.once(Events.ClientReady, readyClient => {
   console.log(`Ready as ${readyClient.user.username}`);
@@ -20,15 +49,21 @@ client.on(Events.MessageCreate, async message => {
   if (message.content === '!ping') await message.reply('Pong!');
 });
 
-async function main() { await client.login(); }
+async function main() {
+  // Initialize once from your own authorized session, then prefer the saved pair.
+  const saved = await sessionStore.load();
+  await client.login(saved ?? (process.env.YAPPER_SESSION || undefined));
+}
 main().catch(error => { console.error(error.message); client.destroy(); });
 ```
 
-Run `npm test` for the offline test suite. Run `npm start` to connect the sample
+Run `npm test` for the offline test suite. Run `npm run example` to connect the sample
 bot using the existing `YapperJS/session.json`. The sample loads `.env` using Node's built-in loader, connects, and enables the
 example text commands. Set `YAPPER_ENABLE_COMMANDS=0` to disable them. Configure
-`YAPPER_PREFIX` (default `!`) and `YAPPER_OWNER_IDS` in .env or bot/config.js.
-No npm dependencies are needed to run the library or tests.
+`YAPPER_PREFIX` (default `!`) and `YAPPER_OWNER_IDS` in .env or examples/bot/config.js.
+The sample is under `examples/bot/`; it is excluded from the npm package.
+The legacy `bot/bot.js` launcher forwards to that example. No runtime dependencies
+are needed for the library. Tests require Node.js/npm and perform offline pack/install checks.
 
 ## Login and rotation
 
@@ -70,7 +105,7 @@ files, backups and environment files are excluded by .gitignore.
 For encrypted local persistence, keep a separate random 32-byte key outside the file:
 
 ```js
-const { Client, EncryptedFileSessionStore } = require('./YapperJS');
+const { Client, EncryptedFileSessionStore } = require('yapperjs');
 const client = new Client({
   sessionStore: new EncryptedFileSessionStore(
     './YapperJS/session.enc.json',
@@ -173,7 +208,7 @@ work; the client's bounded duplicate filter is in-memory only.
 
 ## Text commands
 
-The example bot loads command files from `bot/commands`. Start it, then try:
+The example bot loads command files from `examples/bot/commands`. Start it, then try:
 
 - `!help`, `!ping`, `!avatar`, `!userinfo`, and `!serverinfo`.
 - `!menu` for labeled emoji controls, `!confirm` for a confirmation prompt.
@@ -310,7 +345,7 @@ create Discord's native component buttons, interactions, slash commands or modal
 They are local bot helpers driven by live reactions.
 
 ```js
-const { ReactionButtonBuilder } = require('./YapperJS');
+const { ReactionButtonBuilder } = require('yapperjs');
 const menu = await channel.sendReactionMenu({
   content: 'Choose an action',
   allowedUserIds: [userId],
@@ -399,7 +434,7 @@ payload; no unverified user/timestamp field mapping is assumed.
 
 ## Profile and presence customization
 
-Edit `bot/config.js` to configure the example bot, or set the corresponding
+Edit `examples/bot/config.js` to configure the example bot, or set the corresponding
 YAPPER_BIO, YAPPER_DISPLAY_NAME, YAPPER_CUSTOM_STATUS, YAPPER_PRONOUNS,
 YAPPER_ACCENT_COLOR, YAPPER_STATUS, and YAPPER_ACTIVITY environment variables.
 Fields omitted from the configuration leave the account alone. Configured profile
@@ -525,7 +560,10 @@ await client.refreshToken(); // Old client.refreshToken(client) also remains acc
 ```
 
 The legacy factory stays REST-only. Its true flag still loads/saves the existing
-session.json, preferring the newest stored session over an old encoded value.
+`.data/yapper-session.json` in the consuming application, preferring the newest
+stored session over an old encoded value. This v0.7 compatibility helper no longer
+writes into the installed library folder. Use an explicit FileSessionStore to
+restore an older custom session path.
 `token`, `refreshtoken`, `refresh_token`, `userId` and `botProfile` remain available.
 New code should use `Client`, `client.user`, and a deliberate session store. The
 library itself does not log credentials or noisy login warnings. Type declarations
@@ -593,9 +631,9 @@ channels and emits `guildDelete`; its own join refreshes the visible bootstrap
 before `guildCreate`/`guildMemberAdd`. Previously cached members are not reannounced.
 Message edits/deletions may be partial if the original was never cached.
 
-The sample `bot/events.js` logs membership/server changes. Set
+The sample `examples/bot/events.js` logs membership/server changes. Set
 `YAPPER_LOG_MESSAGES=1` to log server messages too. Set `events.welcomeChannels`
-in `bot/config.js` to a map of server IDs to welcome channel IDs to enable
+in `examples/bot/config.js` to a map of server IDs to welcome channel IDs to enable
 welcome/goodbye messages; no announcements are sent without that map. Channels
 must belong to the corresponding server. Edit these handlers to add your own
 behavior. Keep the existing command router for text commands.
@@ -717,3 +755,102 @@ Endpoint mappings were checked against Yapper's public
 and [message implementation](https://www.yapper.website/_next/static/immutable/chunks/3ulyrb0qt9gwk.js).
 Moderation was tested using mocked API/gateway responses, not live destructive
 operations on an account.
+
+## Private DMs
+
+```js
+await client.sendDM('USER_ID', 'Hello privately!');
+const user = await client.users.fetch('USER_ID');
+if (user) await user.send('Another private message');
+const dm = await client.createDM('USER_ID');
+await dm.send('In the same DM conversation');
+await client.users.send('USER_ID', { content: 'A reply', replyTo: 'MESSAGE_ID' });
+
+client.on(Events.MessageCreate, async message => {
+  if (!message.channel?.isDMBased() || message.authorId === client.userId) return;
+  if (message.content === '!ping') await message.reply('Pong, privately!');
+});
+```
+
+`client.dms.create(user)`, `client.users.createDM(user)`, and `user.createDM()`
+share one creation request per recipient and reuse known one-to-one channels.
+`user.dmChannel` returns a cached DM or null; `createDM(user, { force: true })`
+rechecks through the API. Creation uses the observed `get_or_create_dm` RPC and
+loads its channel record. Recipient IDs are cached for typing. `client.dms.cache`
+contains known DM channels; `await client.dms.fetch()` returns that cache.
+`await client.dms.fetch(channelId)` loads an authorized DM's channel and members.
+
+Incoming DMs use the existing `messageCreate`/`messageUpdate`/`messageDelete`
+events and the authenticated user gateway topic. First-contact message channels
+are loaded before dispatch so DM checks and replies have the correct context;
+queued events retain order. If channel lookup fails, events remain partial and
+`isDMBased()` returns false for an unknown channel. Server messages and DM messages
+share the same Message API. The server enforces blocks, DM settings, membership,
+and permissions. This library does not bypass DM restrictions or send unsolicited
+messages automatically. See `examples/private-dms.js` for a minimal explicit bot.
+
+## Reliable rotating sessions
+
+Auto-refresh is on by default and normally refreshes one minute before expiry.
+For short-lived tokens the lead time is reduced to half the remaining lifetime.
+Concurrent requests share one exchange. Each successful rotation saves both
+replacement tokens before publishing events, using them for requests, or
+reconnecting the gateway with the latest token.
+
+```js
+const client = new Client({
+  sessionStore: new FileSessionStore('./.data/yapper-session.json'),
+  refreshMargin: 60_000,
+  refreshRetryDelay: 5_000,
+  refreshRetryMaxDelay: 300_000,
+});
+client.on(Events.RefreshRetry, ({ attempt, retryIn, status }) => {
+  console.log(`Refresh retry ${attempt} in ${retryIn}ms (status ${status})`);
+});
+client.on(Events.TokenRefresh, ({ expiresAt }) => console.log('Saved session expires at', expiresAt));
+client.on(Events.SessionInvalidated, ({ code }) => {
+  console.error('New login required:', code);
+  // Obtain a new authorized session and explicitly call client.login(newSession).
+});
+await client.login();
+```
+
+Transient network/server failures retry with exponential backoff, capped by
+`refreshRetryMaxDelay`; numeric Retry-After responses can extend that wait.
+`autoRefresh: false` disables scheduled refresh/retries, while on-demand expiry
+checks still run before requests. If saving a rotated token fails, the pair stays
+in memory and requests stay blocked. The retry saves that pair again, emits the
+rotation once, and reconnects the gateway without another token exchange.
+
+Expired saved access tokens are renewed at startup when the saved refresh token
+is still valid. On-demand expiry checks also recover after a suspended process
+wakes. HTTP 400/401/403 from the refresh endpoint stop automatic retries, mark
+`client.auth.requiresLogin`, close realtime/presence, make `client.isReady()` false,
+and emit `sessionInvalidated` metadata without credentials. Explicit login with a
+new session can recover the same client.
+
+No client library can guarantee an everlasting session. Sign-out, revocation,
+password/security changes, inactivity limits, maximum session lifetime, or
+single-session policies can require authentication again. Yapper's specific
+server policy is not publicly known. These limitations follow the underlying
+[Supabase session model](https://supabase.com/docs/guides/auth/sessions).
+Use a dedicated, independently authenticated bot session, one Client per session
+store, and persistent storage in the consuming application. Keep environment
+bootstrap credentials for first use only; the examples prefer the saved rotated
+pair on restart, even if an old initialization environment variable remains.
+The library never reads or writes a session inside its installed package by default.
+
+## Package maintenance
+
+Run `npm test` and `npm run pack:check` from the repository root, then `npm pack`
+to produce the shareable tarball. The file allowlist includes JavaScript, ESM and
+declaration files under YapperJS plus npm metadata, README and MIT license. It
+excludes bot commands, examples, tests, .env, session JSON, backups and node_modules.
+The existing `YapperJS/` folder can also be packed directly for compatibility;
+the repository root is the canonical release package.
+
+After reviewing the generated file list, an owner can authenticate with npm and
+publish under an available name. No npm credentials, registry publication, Git
+commit or push is performed by this change. Module exports use
+[Node conditional exports](https://nodejs.org/api/packages.html#conditional-exports),
+and packaging uses npm's [files allowlist](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#files).

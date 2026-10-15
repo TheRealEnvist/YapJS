@@ -192,7 +192,7 @@ test('batch deletion stops on denial and reports partial progress without deleti
 });
 
 test('owner-only moderation commands reject ordinary users and DMs before API calls', async t => {
-  const { client, calls } = await fixture(t); require('../bot/moderation')(client);
+  const { client, calls } = await fixture(t); require('../examples/bot/moderation')(client);
   const incoming = (content, author = 'bob', channel = 'channel') => client._messageManager(channel)._add({ id: `command-${calls.length}`, channel_id: channel, author_id: author, content });
   for (const name of ['kick', 'ban', 'unban', 'timeout', 'nick', 'deletemessage', 'purge', 'role']) assert.equal(client.commands.resolve(name).ownerOnly, true);
   const before = calls.length; await client.commands.handle(incoming('!ban alice')); await client.commands.handle(incoming('!role create Admins', 'alice', 'dm')); assert.equal(calls.length, before);

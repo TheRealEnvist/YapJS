@@ -1,6 +1,7 @@
 'use strict';
 const Events = Object.freeze({
   ClientReady: 'clientReady', Ready: 'ready', Error: 'error', Warn: 'warn',
+  RefreshRetry: 'refreshRetry', SessionInvalidated: 'sessionInvalidated',
   SessionUpdate: 'sessionUpdate', TokenRefresh: 'tokenRefresh',
   MessageCreate: 'messageCreate', MessageUpdate: 'messageUpdate', MessageDelete: 'messageDelete',
   MessageReactionAdd: 'messageReactionAdd', MessageReactionRemove: 'messageReactionRemove',

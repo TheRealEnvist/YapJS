@@ -163,7 +163,7 @@ test('gateway forwards actual member event envelopes after authentication', asyn
 
 test('sample event handlers are scoped to configured server channels and message logging is optional', async t => {
   const { client, dispatch } = setup(); t.after(() => client.destroy()); await client.login(session);
-  const registerEvents = require('../bot/events'); const log = [], announcements = [];
+  const registerEvents = require('../examples/bot/events'); const log = [], announcements = [];
   client.channels.cache.get('channel').send = async text => { announcements.push(text); };
   registerEvents(client, { log: text => log.push(text), welcomeChannels: { guild: 'channel' } });
   dispatch('INSERT', { server_id: 'guild', user_id: 'bob', nickname: 'B' }); await tick();

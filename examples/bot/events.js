@@ -1,5 +1,5 @@
 "use strict";
-const { Events } = require('../YapperJS');
+const { Events } = require('yapperjs');
 
 module.exports = function registerEvents(client, options = {}) {
   const log = options.log ?? console.log;
