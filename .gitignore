@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+!.env.example
+**/session.json
+**/session.enc.json
+**/*.tmp
+coverage/
+.yapperjs-backup*/

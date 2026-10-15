@@ -1,0 +1,14 @@
+{
+  "name": "yapper-bot",
+  "version": "0.6.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "YapperJS/index.js",
+  "scripts": {
+    "start": "node bot/bot.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

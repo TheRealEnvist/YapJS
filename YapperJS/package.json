@@ -1,0 +1,28 @@
+{
+  "name": "yapperjs",
+  "version": "0.6.0",
+  "description": "A discord.js-style Node.js client for Yapper",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "*.js",
+    "*.d.ts",
+    "auth",
+    "global",
+    "managers",
+    "realtime",
+    "rest",
+    "structures",
+    "util",
+    "presence",
+    "reactions",
+    "collectors",
+    "commands",
+    "interactions"
+  ],
+  "private": true
+}
