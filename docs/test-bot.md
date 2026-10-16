@@ -2,7 +2,7 @@
 
 [Documentation index](README.md)
 
-The test bot is a small runnable application built on YapperJS. Its source is
+The test bot is a small runnable application built on YapJS. Its source is
 `examples/test-bot/bot.js`; it reuses demonstration commands from
 `examples/bot/commands`. This guide ships with the canonical library package,
 but running the included bot requires the source checkout.
@@ -81,7 +81,7 @@ execution and reset on process restart. Examples use the default `!` prefix.
 
 ### Basic response and profile checks
 
-Start with `!ping`, then `!echo Hello from YapperJS`. `!echo` preserves raw argument
+Start with `!ping`, then `!echo Hello from YapJS`. `!echo` preserves raw argument
 text, including matched quote syntax; the router still validates balanced quotes.
 `!status` reports cached counts, so those numbers do not establish a full server
 membership census or socket health.

@@ -2,7 +2,7 @@
 
 [Documentation index](README.md)
 
-This guide builds a bot in **your own project** using the YapperJS package.
+This guide builds a bot in **your own project** using the YapJS package.
 By the end, your bot will log in, stay online, and answer `!ping` and `!help` in
 server channels and DMs.
 
@@ -12,7 +12,7 @@ server channels and DMs.
 - A Yapper account to run as the bot, with access to the channels you want to use.
 - Another account to send commands to it; the router ignores its own messages.
 
-YapperJS has no runtime dependencies. In PowerShell, use `npm.cmd` in place of
+YapJS has no runtime dependencies. In PowerShell, use `npm.cmd` in place of
 `npm` if your execution policy blocks `npm.ps1`.
 
 ## Install
@@ -28,7 +28,7 @@ npm init -y
 Install a published release:
 
 ```sh
-npm install yapperjs
+npm install yapjs
 ```
 
 If the package is not published under that name yet, choose one of these sources
@@ -36,11 +36,11 @@ instead. Run the install command from **your bot project's folder**:
 
 | Source | Command | Requirement |
 | --- | --- | --- |
-| Local checkout | `npm install /absolute/path/to/YapperJS` | Point to the repository root, which contains `package.json` and `docs/` |
-| Package archive | `npm install ./yapperjs-0.7.0.tgz` | Obtain an archive created with `npm pack`; use its actual filename |
+| Local checkout | `npm install /absolute/path/to/YapJS` | Point to the repository root, which contains `package.json` and `docs/` |
+| Package archive | `npm install ./yapjs-0.7.0.tgz` | Obtain an archive created with `npm pack`; use its actual filename |
 | GitHub | `npm install github:TheRealEnvist/YapperJS` | The desired version must be pushed; append `#TAG_OR_COMMIT` to pin it |
 
-The examples below import `yapperjs`, the package name in this repository. If a
+The examples below import `yapjs`, the package name in this repository. If a
 release uses a scoped name, use that name in both the install command and imports.
 
 ## Get a session
@@ -76,7 +76,7 @@ Save this as **`bot.cjs`** next to your project's `package.json` and `.env`:
 
 ```js
 const path = require('node:path');
-const { Client, Events, FileSessionStore } = require('yapperjs');
+const { Client, Events, FileSessionStore } = require('yapjs');
 
 const store = new FileSessionStore(path.join(__dirname, '.data/session.json'));
 const client = new Client({
@@ -145,7 +145,7 @@ if you need to switch accounts or recover a rejected session.
 | `login(saved ?? initial)` | Uses the latest saved pair before a first-use environment value |
 | `destroy()` | Stops local connections, timers, and collectors on shutdown |
 
-The `--env-file` flag is Node's environment loader. YapperJS does not load `.env`
+The `--env-file` flag is Node's environment loader. YapJS does not load `.env`
 or automatically read `YAPPER_VALUE`; the starter explicitly passes its value to
 `login()`. A plain `new Client()` has memory-only storage and no configured
 presence. Your project chooses those options.
@@ -156,7 +156,7 @@ Use named imports in a `.mjs` file or a project configured for ESM:
 
 ```js
 import { fileURLToPath } from 'node:url';
-import { Client, Events, FileSessionStore } from 'yapperjs';
+import { Client, Events, FileSessionStore } from 'yapjs';
 
 const client = new Client({
   sessionStore: new FileSessionStore(fileURLToPath(new URL('./.data/session.json', import.meta.url))),
@@ -168,11 +168,11 @@ client.on(Events.Error, error => console.error(error.message));
 Register commands and listeners and call `login()` as in the complete starter.
 This snippet shows imports and a portable session path; it is not a complete bot.
 
-TypeScript declarations ship with YapperJS; no separate `@types` package is
+TypeScript declarations ship with YapJS; no separate `@types` package is
 required. For example:
 
 ```ts
-import { Client, type CommandDefinition } from 'yapperjs';
+import { Client, type CommandDefinition } from 'yapjs';
 
 const client = new Client();
 const ping: CommandDefinition = {
@@ -187,6 +187,8 @@ and login as above, and compile with your project's TypeScript tooling.
 
 ## Next steps
 
+- [Common bot recipes](bot-recipes.md): build a welcome bot or add FAQ, DM,
+  poll, announcement, and avatar commands.
 - [Commands and events](commands-and-events.md): add commands, access checks,
   and message listeners.
 - [API reference](api.md): send messages and DMs, fetch users and history,

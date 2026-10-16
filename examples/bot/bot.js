@@ -3,7 +3,7 @@ const path = require('node:path');
 // Node's built-in loader reads local configuration without another dependency.
 try { process.loadEnvFile(path.join(__dirname, '../../.env')); }
 catch (error) { if (error.code !== 'ENOENT') throw error; }
-const { Client, Events, FileSessionStore, EncryptedFileSessionStore } = require('yapperjs');
+const { Client, Events, FileSessionStore, EncryptedFileSessionStore } = require('yapjs');
 const config = require('./config');
 const registerEvents = require('./events');
 

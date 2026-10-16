@@ -2,7 +2,7 @@
 
 [Documentation index](README.md)
 
-This guide is for people changing or publishing YapperJS. Package users should
+This guide is for people changing or publishing YapJS. Package users should
 start with [Getting started](getting-started.md) and the [API reference](api.md).
 
 ## Source layout
@@ -19,6 +19,11 @@ start with [Getting started](getting-started.md) and the [API reference](api.md)
 
 The nested `YapperJS/package.json` is retained for compatibility with direct
 installation of that directory. Publish the repository root to include the guides.
+
+The public package is now **YapJS** (`yapjs` on npm). The implementation folder
+keeps its legacy `YapperJS/` name so existing local imports and session paths keep
+working. Repository links still point to the current GitHub repository. The
+encrypted session format is unchanged, so saved sessions remain readable.
 
 ## Validate changes
 
@@ -57,7 +62,7 @@ README, license, and package metadata. It excludes example code, tests,
 Install that archive into another project to check it as a dependency:
 
 ```sh
-npm install /path/to/yapperjs-0.7.0.tgz
+npm install /path/to/yapjs-0.7.0.tgz
 ```
 
 Use the filename for the version you packed.

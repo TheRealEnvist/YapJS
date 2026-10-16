@@ -2,7 +2,7 @@
 
 [Documentation index](README.md)
 
-The source repository contains runnable applications that demonstrate YapperJS.
+The source repository contains runnable applications that demonstrate YapJS.
 Use [Getting started](getting-started.md) to create your own application with the
 installed package. This guide covers the optional repository launchers.
 

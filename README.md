@@ -1,6 +1,6 @@
-# YapperJS
+# YapJS
 
-An unofficial Node.js library for building Yapper bots. YapperJS handles
+An unofficial Node.js library for building Yapper bots. YapJS handles
 authentication, realtime events, messages, commands, reactions, and server
 management through a discord.js-style API.
 
@@ -12,16 +12,16 @@ with no runtime dependencies. Licensed under MIT.
 For a published npm release:
 
 ```sh
-npm install yapperjs
+npm install yapjs
 ```
 
 If the package has not been published under that name yet, install the repository
-root from a local checkout instead: `npm install /absolute/path/to/YapperJS`.
+root from a local checkout instead: `npm install /absolute/path/to/YapJS`.
 See [installation options](docs/getting-started.md#install) for Git and tarball installs.
 
 ```js
-const { Client, Events, FileSessionStore } = require('yapperjs');
-// ESM: import { Client, Events, FileSessionStore } from 'yapperjs';
+const { Client, Events, FileSessionStore } = require('yapjs');
+// ESM: import { Client, Events, FileSessionStore } from 'yapjs';
 ```
 
 ## Create your first bot
@@ -47,7 +47,7 @@ browser tabs before using that session in the bot.
 
 ```js
 const path = require('node:path');
-const { Client, Events, FileSessionStore } = require('yapperjs');
+const { Client, Events, FileSessionStore } = require('yapjs');
 
 const store = new FileSessionStore(path.join(__dirname, '.data/session.json'));
 const client = new Client({
@@ -101,6 +101,9 @@ renews every 45 seconds by default. Ctrl+C stops connections and timers.
 
 For project setup, ESM, and TypeScript, follow [Getting started](docs/getting-started.md).
 
+For a complete welcome bot, FAQs, private help, polls, announcements, and avatar
+commands, see [Common bot recipes](docs/bot-recipes.md).
+
 ## Use the package
 
 The following snippets assume your `client` has logged in. Run `await` inside
@@ -112,7 +115,7 @@ an async function or an ES module.
 const channel = await client.channels.fetch('CHANNEL_ID');
 if (!channel) throw new Error('Channel unavailable.');
 
-const sent = await channel.send('Hello from YapperJS!');
+const sent = await channel.send('Hello from YapJS!');
 await sent.reply('A reply to that message.');
 await client.sendDM('USER_ID', 'Hello privately!');
 
@@ -154,6 +157,7 @@ Start with [Getting started](docs/getting-started.md), or browse the
 | Guide | What you will learn |
 | --- | --- |
 | [Getting started](docs/getting-started.md) | Install the package and build your own bot |
+| [Common bot recipes](docs/bot-recipes.md) | Build a welcome bot, FAQs, private help, polls, and announcements |
 | [Authentication](docs/authentication.md) | Find a session, save it, and handle token refresh |
 | [Configuration](docs/configuration.md) | Client options, command defaults, and online heartbeat |
 | [API reference](docs/api.md) | Clients, users, channels, messages, servers, and managers |
@@ -167,7 +171,7 @@ declarations are included; no separate `@types` package is needed.
 
 ## Scope and support
 
-YapperJS supports plain-text messaging, replies, history, DMs, reactions,
+YapJS supports plain-text messaging, replies, history, DMs, reactions,
 collectors, command routing, presence, profile changes, and server management.
 File uploads, rich embeds, native slash commands, voice, and full discord.js
 compatibility are not implemented. Yapper enforces permissions and API limits;

@@ -1,4 +1,4 @@
-# YapperJS compatibility package
+# YapJS compatibility package
 
 This directory contains the library implementation and can still be installed
 or packed directly. The repository root is the canonical package and includes
@@ -16,9 +16,9 @@ and native ESM expose the same named exports, with TypeScript declarations in
 [index.d.ts](index.d.ts).
 
 ```js
-const { Client, Events, FileSessionStore } = require('yapperjs');
+const { Client, Events, FileSessionStore } = require('yapjs');
 // In an ES module:
-// import { Client, Events, FileSessionStore } from 'yapperjs';
+// import { Client, Events, FileSessionStore } from 'yapjs';
 ```
 
 Importing the library does not load `.env`, register bot commands, start a
@@ -31,7 +31,7 @@ independent authorized session on first use; later runs restore its stored pair.
 
 ```js
 const path = require('node:path');
-const { Client, Events, FileSessionStore } = require('yapperjs');
+const { Client, Events, FileSessionStore } = require('yapjs');
 const store = new FileSessionStore(path.join(__dirname, '.data/session.json'));
 const client = new Client({ sessionStore: store, presence: { status: 'online' } });
 

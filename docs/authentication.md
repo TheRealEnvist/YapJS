@@ -6,7 +6,7 @@ Your bot logs in with an account session. For most applications, the setup is:
 
 1. Copy the account's encoded session from the browser once.
 2. Pass it to `client.login()` with a persistent session store configured.
-3. Restore the saved session on later runs; YapperJS saves replacement tokens
+3. Restore the saved session on later runs; YapJS saves replacement tokens
    as it refreshes them.
 
 The [complete starter](getting-started.md#complete-commonjs-starter) implements
@@ -78,7 +78,7 @@ an environment variable named `YAPPER_VALUE`.
 
 The copied value contains login credentials even though it is encoded. Keep it
 private and out of source control. With a persistent `sessionStore` configured,
-YapperJS saves the current pair. Remove the first-use `YAPPER_VALUE` from `.env`
+YapJS saves the current pair. Remove the first-use `YAPPER_VALUE` from `.env`
 after successful initialization and let subsequent runs restore the store.
 
 If `yp:1n00fw` is missing, confirm that login completed and that you selected
@@ -115,7 +115,7 @@ can be retried on an undestroyed client. A destroyed client requires a new insta
 tests and short-lived programs. Restarting the process loses the stored session.
 
 ```js
-const { Client, MemorySessionStore } = require('yapperjs');
+const { Client, MemorySessionStore } = require('yapjs');
 const client = new Client({ sessionStore: new MemorySessionStore() });
 ```
 
@@ -123,7 +123,7 @@ const client = new Client({ sessionStore: new MemorySessionStore() });
 
 ```js
 const path = require('node:path');
-const { Client, FileSessionStore } = require('yapperjs');
+const { Client, FileSessionStore } = require('yapjs');
 const store = new FileSessionStore(path.join(__dirname, '.data/session.json'));
 const client = new Client({ sessionStore: store });
 ```
@@ -152,7 +152,7 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
 Keep it separately from the encrypted file. In your application:
 
 ```js
-const { Client, EncryptedFileSessionStore } = require('yapperjs');
+const { Client, EncryptedFileSessionStore } = require('yapjs');
 const store = new EncryptedFileSessionStore(
   './.data/session.enc.json',
   process.env.YAPPER_SESSION_KEY,
@@ -212,7 +212,7 @@ process crash after exchange and before save can still require reauthentication.
 Use the metadata events to observe recovery without logging credentials:
 
 ```js
-const { Events } = require('yapperjs');
+const { Events } = require('yapjs');
 client.on(Events.TokenRefresh, ({ expiresAt }) => {
   console.log('Replacement session saved; expires at', expiresAt);
 });

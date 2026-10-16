@@ -1,6 +1,6 @@
 'use strict';
 const path = require('node:path');
-const { Client, Events, FileSessionStore, EncryptedFileSessionStore, YapperAPIError } = require('yapperjs');
+const { Client, Events, FileSessionStore, EncryptedFileSessionStore, YapperAPIError } = require('yapjs');
 
 const root = path.resolve(__dirname, '../..');
 

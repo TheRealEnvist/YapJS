@@ -1,6 +1,6 @@
-# YapperJS documentation
+# YapJS documentation
 
-Use YapperJS to build your own Yapper bot in a Node.js application. These guides
+Use YapJS to build your own Yapper bot in a Node.js application. These guides
 cover the public package API, from first login to messages, commands, interactive
 controls, and server management.
 
@@ -9,11 +9,15 @@ are included, with no runtime dependencies.
 
 ## Start here
 
-1. [Getting started](getting-started.md): install YapperJS in a new project,
+1. [Getting started](getting-started.md): install YapJS in a new project,
    create `bot.cjs`, and run your first command.
 2. [Authentication](authentication.md): find your account's session and choose
    how your application saves it between runs.
 3. [Commands and events](commands-and-events.md): add your bot's behavior.
+
+Want a concrete bot to build? [Common bot recipes](bot-recipes.md) includes a
+complete welcome bot and commands for FAQs, private help, polls, announcements,
+and avatars.
 
 You can build a bot using the installed package and these guides. The repository's
 example launchers are optional.
@@ -22,6 +26,7 @@ example launchers are optional.
 
 | I want to… | Read |
 | --- | --- |
+| Build a welcome bot or copy a practical command example | [Common bot recipes](bot-recipes.md) |
 | Set options, prefixes, status, activity, or heartbeat timing | [Configuration and presence](configuration.md) |
 | Send, edit, delete, or fetch messages; work with users and DMs | [API reference](api.md) |
 | Register commands, load command files, or handle realtime events | [Commands and events](commands-and-events.md) |
@@ -73,7 +78,7 @@ Use the [API reference](api.md) for method behavior and
 | Administration | Profile/server/channel edits, roles, kicks, bans, timeouts | Subject to Yapper permissions and role hierarchy |
 | Sessions | Memory, plaintext files, encrypted files, custom stores | Rejected or revoked sessions can require login again |
 
-YapperJS is unofficial. API availability and permissions are controlled by
+YapJS is unofficial. API availability and permissions are controlled by
 Yapper. For an operation that fails, use [Troubleshooting](troubleshooting.md)
 to inspect the error and identify the affected API call.
 

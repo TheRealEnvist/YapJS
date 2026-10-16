@@ -9,7 +9,7 @@ const runNpm = require('../scripts/run-npm');
 const root = path.resolve(__dirname, '..');
 
 test('packed library excludes credentials/examples and installs with matching CommonJS/ESM exports', async () => {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'yapperjs-package-test-'));
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'yapjs-package-test-'));
   try {
     const source = path.join(directory, 'source'), consumer = path.join(directory, 'consumer'), cache = path.join(directory, 'cache');
     await fs.mkdir(source); await fs.mkdir(consumer);
@@ -26,14 +26,14 @@ test('packed library excludes credentials/examples and installs with matching Co
     const archive = path.join(source, packed.filename);
     await fs.writeFile(path.join(consumer, 'package.json'), '{"name":"consumer-test","private":true}');
     runNpm(['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--no-package-lock', '--cache', cache, archive], { cwd: consumer, stdio: ['ignore', 'pipe', 'pipe'] });
-    assert.match(await fs.readFile(path.join(consumer, 'node_modules/yapperjs/docs/README.md'), 'utf8'), /YapperJS documentation/);
+    assert.match(await fs.readFile(path.join(consumer, 'node_modules/yapjs/docs/README.md'), 'utf8'), /YapJS documentation/);
     await fs.writeFile(path.join(consumer, 'smoke.cjs'), `
       const assert = require('node:assert/strict');
       globalThis.fetch = () => { throw new Error('Library import must not start requests'); };
       const before = process.listenerCount('SIGINT');
-      const api = require('yapperjs');
+      const api = require('yapjs');
       (async () => {
-        const esm = await import('yapperjs');
+        const esm = await import('yapjs');
         for (const key of Object.keys(api)) assert.equal(esm[key], api[key], key);
         const client = new api.Client({ realtime: false });
         assert.equal(client.isReady(), false); assert.equal(client.user, null); assert.equal(client.token, null);

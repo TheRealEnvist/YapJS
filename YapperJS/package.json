@@ -1,5 +1,5 @@
 {
-  "name": "yapperjs",
+  "name": "yapjs",
   "version": "0.7.0",
   "description": "An unofficial, dependency-free Node.js library for building Yapper bots",
   "type": "commonjs",

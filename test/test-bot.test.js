@@ -2,7 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { once } = require('node:events');
-const { Events, MemorySessionStore } = require('yapperjs');
+const { Events, MemorySessionStore } = require('yapjs');
 const { createTestBot, startTestBot } = require('../examples/test-bot/bot');
 const { createMockAPI } = require('../examples/test-bot/mock-api');
 const { runDemo } = require('../examples/test-bot/demo');
@@ -136,9 +136,9 @@ test('avatar and userinfo fetch public profile columns and use the media CDN', a
   assert.equal(await handle('!avatar'), true);
   assert.equal([...api.messages.values()].at(-1).content, `${client.options.mediaBaseUrl}/avatars/demo-user/avatar.png`);
   assert.equal(await handle('!userinfo'), true);
-  assert.match([...api.messages.values()].at(-1).content, /Demo Tester\nID: demo-user\nTesting YapperJS/);
+  assert.match([...api.messages.values()].at(-1).content, /Demo Tester\nID: demo-user\nTesting YapJS/);
   const profiles = await client.users.fetch(undefined, { force: true });
-  assert.equal(profiles.get('demo-user').bio, 'Testing YapperJS');
+  assert.equal(profiles.get('demo-user').bio, 'Testing YapJS');
   await client.user.setBio('Updated test bio');
   assert.equal(client.user.bio, 'Updated test bio');
   assert.ok(api.calls.filter(call => call.url.pathname.endsWith('/profiles')).every(call => !call.url.searchParams.get('select').includes('*')));

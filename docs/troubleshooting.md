@@ -24,7 +24,7 @@ checked separately for each operation.
 ## Read errors without exposing credentials
 
 ```js
-const { Events, YapperAPIError } = require('yapperjs');
+const { Events, YapperAPIError } = require('yapjs');
 client.on(Events.Error, error => {
   console.error(error.message);
   const request = error instanceof YapperAPIError ? error : error.request;

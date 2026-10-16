@@ -1,10 +1,10 @@
-# YapperJS test bot
+# YapJS test bot
 
 A starter bot for trying the library in server channels and private DMs. Edit
 `bot.js` to add commands; it also reuses the reaction menus, polls, pagination,
 collectors, and profile commands from `examples/bot/commands`.
 
-To build your own bot with the installed YapperJS package, start with
+To build your own bot with the installed YapJS package, start with
 [Getting started](../../docs/getting-started.md). This README covers the optional
 repository test bot.
 

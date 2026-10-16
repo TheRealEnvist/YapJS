@@ -44,6 +44,7 @@ class EncryptedFileSessionStore extends FileSessionStore {
   }
   encode(session) {
     const iv = randomBytes(12), cipher = createCipheriv('aes-256-gcm', this.#key, iv);
+    // Keep this format marker stable so YapJS can read existing encrypted sessions.
     cipher.setAAD(Buffer.from('yapperjs-session-v1'));
     const data = Buffer.concat([cipher.update(JSON.stringify(session), 'utf8'), cipher.final()]);
     return JSON.stringify({ version: 1, iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), data: data.toString('base64') });

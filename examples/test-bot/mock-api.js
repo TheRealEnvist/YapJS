@@ -1,10 +1,10 @@
 'use strict';
-const { Message } = require('yapperjs');
+const { Message } = require('yapjs');
 
 // An in-memory API for the demo and tests. Every request stays in this process;
 // unsupported routes fail instead of falling back to the real Yapper API.
 function createMockAPI({ onRequest } = {}) {
-  const profiles = [{ id: 'demo-bot', username: 'TestBot', is_bot: true }, { id: 'demo-user', username: 'Tester', display_name: 'Demo Tester', bio: 'Testing YapperJS', avatar_path: 'demo-user/avatar.png' }];
+  const profiles = [{ id: 'demo-bot', username: 'TestBot', is_bot: true }, { id: 'demo-user', username: 'Tester', display_name: 'Demo Tester', bio: 'Testing YapJS', avatar_path: 'demo-user/avatar.png' }];
   const channel = { id: 'demo-channel', name: 'bot-testing', kind: 'text', server_id: 'demo-server' };
   const dm = { id: 'demo-dm', kind: 'dm' };
   const messages = new Map(), reactions = new Map(), calls = [];

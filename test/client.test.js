@@ -128,7 +128,7 @@ test('destroy during refresh cannot resurrect session', async () => {
   await assert.rejects(refreshing, /cancelled/); assert.equal(client.token, null); assert.equal(client.isReady(), false);
 });
 test('file session replacement round-trips and uses private POSIX permissions', async () => {
-  const directory = await mkdtemp(path.join(os.tmpdir(), 'yapperjs-test-'));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'yapjs-test-'));
   try {
     const store = new FileSessionStore(path.join(directory, 'session.json')), value = session();
     await store.save(value); assert.deepEqual(await store.load(), value);
@@ -139,7 +139,7 @@ test('file session replacement round-trips and uses private POSIX permissions', 
   finally { await rm(directory, { recursive: true, force: true }); }
 });
 test('encrypted store hides tokens and rejects wrong keys', async () => {
-  const directory = await mkdtemp(path.join(os.tmpdir(), 'yapperjs-test-'));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'yapjs-test-'));
   try { const store = new EncryptedFileSessionStore(path.join(directory, 'session.enc.json'), Buffer.alloc(32, 3)), value = session(); await store.save(value); assert.deepEqual(await store.load(), value);
     const text = await readFile(store.path, 'utf8'); assert.ok(!text.includes('fake-refresh')); assert.ok(!text.includes('fake-access'));
     await assert.rejects(new EncryptedFileSessionStore(store.path, Buffer.alloc(32, 4)).load(), SessionStorageError);

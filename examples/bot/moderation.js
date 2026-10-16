@@ -1,5 +1,5 @@
 'use strict';
-const { MessageBulkDeleteError } = require('yapperjs');
+const { MessageBulkDeleteError } = require('yapjs');
 // Only configured bot owners may use these commands, even when the bot account
 // has broad server permissions. The API independently checks its permissions.
 module.exports = function registerModeration(client) {

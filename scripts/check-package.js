@@ -4,7 +4,7 @@ const os = require('node:os');
 const path = require('node:path');
 const runNpm = require('./run-npm');
 const root = path.resolve(__dirname, '..');
-const cache = fs.mkdtempSync(path.join(os.tmpdir(), 'yapperjs-pack-cache-'));
+const cache = fs.mkdtempSync(path.join(os.tmpdir(), 'yapjs-pack-cache-'));
 try {
   const manifest = JSON.parse(runNpm(['pack', '--dry-run', '--json', '--ignore-scripts', '--cache', cache], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))[0];
   const allowed = name => ['package.json', 'README.md', 'LICENSE', 'YapperJS/package.json', 'YapperJS/LICENSE'].includes(name) || /^YapperJS\/(?:[A-Za-z0-9_/-]+)\.(?:js|mjs|d\.ts)$/.test(name) || /^docs\/[A-Za-z0-9_-]+\.md$/.test(name);
