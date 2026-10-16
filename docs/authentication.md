@@ -39,6 +39,43 @@ Use your own independent bot session. Avoid running a browser and bot or two
 processes against one refresh-token chain. The lock is per `Client` instance;
 it does not coordinate multiple clients or machines.
 
+## Find your bot token in the browser
+
+The value used here as a "bot token" is the account's encoded login session.
+YapperJS accepts it directly through `YAPPER_VALUE`; you do not need to decode
+it or extract the individual access and refresh tokens.
+
+1. Open Yapper on the web and sign in to the account you want to run as the bot.
+2. Open the browser's developer tools. In Chrome or Edge on Windows, press
+   **F12** or **Ctrl+Shift+I**.
+3. Open **Application** in Chrome/Edge, or **Storage** in Firefox.
+4. Expand **Local Storage** and select the Yapper origin you are signed into,
+   for example `https://www.yapper.website`.
+5. Find the entry whose key is **`yp:1n00fw`**. You can use the storage table's
+   filter to search for that key.
+6. Copy the complete **Value** for that entry, rather than the key name. Keep
+   the encoded value unchanged.
+7. Put it in the repository root `.env` file:
+
+   ```dotenv
+   YAPPER_VALUE='PASTE_THE_COMPLETE_yp:1n00fw_VALUE_HERE'
+   ```
+
+8. Close that account's Yapper browser tabs before starting the bot with
+   `npm run bot` (or `npm.cmd run bot` in PowerShell). Avoid running the browser
+   and bot against that same session at the same time.
+
+The copied value contains login credentials even though it is encoded. Keep it
+private and out of source control. After successful initialization, the bot saves
+the current session pair; remove the first-use `YAPPER_VALUE` from `.env` and let
+subsequent runs restore the saved session.
+
+If `yp:1n00fw` is missing, confirm that login completed and that you selected
+the storage origin for the current Yapper tab. Storage is separate for each
+origin and browser profile. If both initialization variables are set,
+`YAPPER_SESSION` takes precedence over `YAPPER_VALUE`; an existing saved session
+takes precedence over both in the example launchers.
+
 ## Startup and saved-session precedence
 
 The example launchers deliberately prefer the store's latest replacement pair:

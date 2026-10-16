@@ -45,6 +45,8 @@ For a live connection:
 2. Use your own independent bot session. Existing
    `YapperJS/session.json` is restored automatically. On first use, supply an
    authorized session through `YAPPER_SESSION` or `YAPPER_VALUE` in `.env`.
+   [Find your bot token in the browser](authentication.md#find-your-bot-token-in-the-browser)
+   explains how to copy the `yp:1n00fw` value into `YAPPER_VALUE`.
    [Authentication](authentication.md#accepted-login-inputs) describes each input.
 3. Start the bot:
 

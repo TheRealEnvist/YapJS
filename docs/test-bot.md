@@ -28,6 +28,12 @@ install for this checkout. [Getting started](getting-started.md) covers first us
 4. From a different account, send `!ping` in a visible channel or DM.
 5. Send `!help` to see available commands.
 
+To get the encoded initialization value, log in to the bot account on the web,
+open developer tools, and find **`yp:1n00fw`** under the Yapper site's **Local
+Storage**. Copy its complete value into `YAPPER_VALUE` in `.env`. See
+[Find your bot token](authentication.md#find-your-bot-token-in-the-browser) for
+the browser steps and session-handling details.
+
 Saved sessions take precedence over environment initialization values. The
 launcher saves the replacement pair after login/rotation and prefers it on the
 next start. Stop with Ctrl+C, and restart after editing code or configuration.

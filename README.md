@@ -112,6 +112,12 @@ only a `refresh_token`. Use your own independent authorized login session. Yappe
 public project API key is included; `apiKey` or `YAPPER_API_KEY` overrides it if the
 site rotates that key.
 
+To obtain the encoded value, sign in to the bot's account on the Yapper website
+and copy the **Value** of **`yp:1n00fw`** from that site's browser Local Storage.
+Set it as `YAPPER_VALUE` in `.env`. See
+[Find your bot token](docs/authentication.md#find-your-bot-token-in-the-browser)
+for the developer-tools walkthrough and saved-session precedence.
+
 ```js
 await client.login({ access_token, refresh_token, expires_at });
 // Or initialize using an encoded value without committing it to source:

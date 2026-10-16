@@ -13,6 +13,7 @@ authentication, configuration, event, and troubleshooting guides.
 
 - [Try it offline](#try-it-offline)
 - [Connect to Yapper](#connect-to-yapper)
+- [Find your bot token](#find-your-bot-token)
 - [Configuration reference](#configuration-reference)
 - [Online presence](#online-presence)
 - [Commands](#commands)
@@ -61,6 +62,31 @@ storage and defaults to `YapperJS/session.enc.json` instead.
 
 In Windows PowerShell, use `npm.cmd` in place of `npm` if script execution policy
 blocks `npm.ps1`. There are no dependencies to install for this checkout.
+
+## Find your bot token
+
+1. Log in to the bot's account on the Yapper website.
+2. Open developer tools with **F12** or **Ctrl+Shift+I** on Windows.
+3. In Chrome/Edge, open **Application → Local Storage**. In Firefox, open
+   **Storage → Local Storage**. Select the Yapper site's origin.
+4. Find the key **`yp:1n00fw`** and copy its entire **Value**, not the key name.
+5. Paste that encoded value into the repository root `.env` file:
+
+   ```dotenv
+   YAPPER_VALUE='PASTE_THE_COMPLETE_yp:1n00fw_VALUE_HERE'
+   ```
+
+6. Close the bot account's Yapper browser tabs, then run `npm run bot` or
+   `npm.cmd run bot`. Do not run both clients against the same session.
+
+This value is the account's encoded session and contains credentials. Keep it
+private; no manual decoding is needed. After the first successful login, remove
+the initialization value from `.env` and use the saved session. Existing saved
+sessions take precedence, and a nonempty `YAPPER_SESSION` also takes precedence
+over `YAPPER_VALUE`.
+
+See [the authentication walkthrough](../../docs/authentication.md#find-your-bot-token-in-the-browser)
+if the key is missing or you need details about session storage and recovery.
 
 ## Configuration reference
 
