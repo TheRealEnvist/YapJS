@@ -18,7 +18,8 @@ class Client extends EventEmitter {
   constructor(options = {}) {
     super({ captureRejections: true });
     if (!options || typeof options !== 'object' || Array.isArray(options)) throw new TypeError('Client options must be an object.');
-    const apiKey = options.apiKey ?? process.env.YAPPER_API_KEY ?? require('./global').apiKey;
+    const envApiKey = process.env.YAPPER_API_KEY;
+    const apiKey = options.apiKey ?? (envApiKey?.trim() ? envApiKey : require('./global').apiKey);
     if (typeof apiKey !== 'string' || !apiKey.trim()) throw new TypeError('Set options.apiKey or YAPPER_API_KEY to the public project key.');
     Object.defineProperty(this, 'apiKey', { value: apiKey });
     const messageCacheMaxSize = options.messageCacheMaxSize ?? 200;

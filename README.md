@@ -57,7 +57,25 @@ async function main() {
 main().catch(error => { console.error(error.message); client.destroy(); });
 ```
 
-Run `npm test` for the offline test suite. Run `npm run example` to connect the sample
+## Example / test bot
+
+Run the starter bot from this checkout (Node.js 22+, no dependencies to install):
+
+```sh
+npm run bot:demo  # Offline demo with fake messages; no account needed.
+npm run test:bot  # Offline tests for the starter bot.
+npm run bot       # Connect using your authorized session and .env configuration.
+```
+
+For the live bot, copy `.env.example` to `.env` and set `YAPPER_SESSION` or
+`YAPPER_VALUE`, or use your existing `YapperJS/session.json`. Then send `!help`
+from another account. Try `!ping`, `!echo Hello`, `!status`, `!test` (send/edit/react),
+and `!dm` to receive a private test message. Reaction menus, polls, and collectors
+are included too. See [the test bot guide](examples/test-bot/README.md) for setup,
+configuration, and adding commands. In PowerShell, use `npm.cmd` if `npm.ps1` is
+blocked by your execution policy.
+
+Run `npm test` for the full offline test suite. Run `npm run example` to connect the sample
 bot using the existing `YapperJS/session.json`. The sample loads `.env` using Node's built-in loader, connects, and enables the
 example text commands. Set `YAPPER_ENABLE_COMMANDS=0` to disable them. Configure
 `YAPPER_PREFIX` (default `!`) and `YAPPER_OWNER_IDS` in .env or examples/bot/config.js.

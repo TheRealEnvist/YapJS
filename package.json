@@ -41,6 +41,9 @@
   ],
   "scripts": {
     "test": "node --test test/*.test.js",
+    "bot": "node examples/test-bot/bot.js",
+    "bot:demo": "node examples/test-bot/demo.js",
+    "test:bot": "node --test test/test-bot.test.js",
     "example": "node examples/bot/bot.js",
     "pack:check": "node scripts/check-package.js"
   }

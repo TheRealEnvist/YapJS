@@ -127,9 +127,15 @@ test('destroy during refresh cannot resurrect session', async () => {
   await client.login(session()); const refreshing = client.auth.refresh(); await tick(); client.destroy(); resolve();
   await assert.rejects(refreshing, /cancelled/); assert.equal(client.token, null); assert.equal(client.isReady(), false);
 });
-test('file session replacement has private permissions', async () => {
+test('file session replacement round-trips and uses private POSIX permissions', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'yapperjs-test-'));
-  try { const store = new FileSessionStore(path.join(directory, 'session.json')), value = session(); await store.save(value); assert.deepEqual(await store.load(), value); assert.equal((await stat(store.path)).mode & 0o777, 0o600); await store.clear(); assert.equal(await store.load(), null); }
+  try {
+    const store = new FileSessionStore(path.join(directory, 'session.json')), value = session();
+    await store.save(value); assert.deepEqual(await store.load(), value);
+    // Windows stat mode bits do not represent NTFS access control lists.
+    if (process.platform !== 'win32') assert.equal((await stat(store.path)).mode & 0o777, 0o600);
+    await store.clear(); assert.equal(await store.load(), null);
+  }
   finally { await rm(directory, { recursive: true, force: true }); }
 });
 test('encrypted store hides tokens and rejects wrong keys', async () => {

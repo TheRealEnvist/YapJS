@@ -5,6 +5,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
 const { execFileSync } = require('node:child_process');
+const runNpm = require('../scripts/run-npm');
 const root = path.resolve(__dirname, '..');
 
 test('packed library excludes credentials/examples and installs with matching CommonJS/ESM exports', async () => {
@@ -17,12 +18,12 @@ test('packed library excludes credentials/examples and installs with matching Co
     await fs.writeFile(path.join(source, 'YapperJS/session.json'), '{"refresh_token":"FAKE_PACKAGE_SECRET"}');
     await fs.writeFile(path.join(source, '.env'), 'YAPPER_SESSION=FAKE_PACKAGE_SECRET');
     await fs.mkdir(path.join(source, 'examples')); await fs.writeFile(path.join(source, 'examples/bot.js'), 'throw Error("Do not ship me");');
-    const packed = JSON.parse(execFileSync('npm', ['pack', '--json', '--ignore-scripts', '--cache', cache], { cwd: source, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))[0];
+    const packed = JSON.parse(runNpm(['pack', '--json', '--ignore-scripts', '--cache', cache], { cwd: source, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))[0];
     const files = packed.files.map(file => file.path);
     assert.ok(files.includes('YapperJS/index.mjs')); assert.ok(files.includes('LICENSE')); assert.ok(!files.some(file => /session.*\.json|\.env|^(?:examples|bot|test)\//.test(file)));
     const archive = path.join(source, packed.filename);
     await fs.writeFile(path.join(consumer, 'package.json'), '{"name":"consumer-test","private":true}');
-    execFileSync('npm', ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--no-package-lock', '--cache', cache, archive], { cwd: consumer, stdio: ['ignore', 'pipe', 'pipe'] });
+    runNpm(['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--no-package-lock', '--cache', cache, archive], { cwd: consumer, stdio: ['ignore', 'pipe', 'pipe'] });
     await fs.writeFile(path.join(consumer, 'smoke.cjs'), `
       const assert = require('node:assert/strict');
       globalThis.fetch = () => { throw new Error('Library import must not start requests'); };
