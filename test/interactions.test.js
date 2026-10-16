@@ -156,6 +156,24 @@ test('pagination serializes navigation, clamps bounds and closes', async () => {
   react(menu.message, '⬅️'); await tick(); assert.ok(menu.message.content.startsWith('First'));
   react(menu.message, '⏹️'); assert.equal((await menu.finished).reason, 'closed'); client.destroy();
 });
+
+test('pagination edit denial keeps the original message and preserves safe API diagnostics', async t => {
+  const errors = [];
+  const { client, react, calls } = setup(call => call.options.method === 'PATCH'
+    ? Response.json({ code: '42501', message: 'private-server-detail' }, { status: 403 }) : undefined);
+  t.after(() => client.destroy());
+  client.on(Events.Error, error => errors.push(error));
+  await client.login(session);
+  const menu = await client.channels.cache.get('channel').paginate(['First', 'Second'], { allowedUserIds: ['alice'] });
+  react(menu.message, '\u27a1\ufe0f');
+  assert.equal((await menu.finished).reason, 'error');
+  assert.equal(menu.message.content.startsWith('First'), true);
+  assert.equal(calls.filter(call => call.options.method === 'POST' && call.url.pathname.endsWith('/messages')).length, 1);
+  assert.equal(errors[0].request.status, 403);
+  assert.equal(errors[0].request.route, '/rest/v1/messages');
+  assert.equal(errors[0].request.code, '42501');
+  assert.doesNotMatch(errors[0].message + JSON.stringify(errors[0]), /private-server-detail/);
+});
 test('polls count one current vote per user and process removals', async () => {
   const { client, react, unreact } = setup(); await client.login(session); const poll = await client.channels.cache.get('channel').createPoll({ question: 'Pick one', choices: ['A', 'B'], updateOnEnd: false });
   react(poll.message, '1️⃣'); const second = react(poll.message, '2️⃣'); react(poll.message, '1️⃣', 'bob'); await tick();

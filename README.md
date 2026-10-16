@@ -5,6 +5,25 @@ discord.js-style API and no runtime dependencies. Importing it starts no bot,
 loads no .env file, registers no commands, and opens no connection. You write the
 bot and call `client.login()` explicitly.
 
+## Documentation
+
+Start with the [documentation index](docs/README.md) for the full guide set.
+
+| Topic | Guide |
+| --- | --- |
+| Setup, installation, and a complete starter | [Getting started](docs/getting-started.md) |
+| Options, environment variables, and online heartbeat | [Configuration](docs/configuration.md) |
+| Session formats, storage, rotation, and recovery | [Authentication](docs/authentication.md) |
+| Objects, managers, methods, and return values | [API reference](docs/api.md) |
+| Commands, access checks, events, and realtime | [Commands and events](docs/commands-and-events.md) |
+| Reactions, collectors, menus, pages, and polls | [Interactions](docs/interactions.md) |
+| Profiles, channels, servers, roles, and moderation | [Customization and moderation](docs/customization-and-moderation.md) |
+| Error diagnosis, known limitations, and package checks | [Troubleshooting](docs/troubleshooting.md) |
+| Included test bot, command behavior, and extension points | [Test-bot walkthrough](docs/test-bot.md) |
+
+The Markdown guides ship in the canonical root package. Runnable example code
+remains available in the source checkout.
+
 ## Install
 
 From another project, install your local checkout or the generated package:
@@ -37,7 +56,7 @@ const path = require('node:path');
 const { Client, Events, FileSessionStore } = require('yapperjs');
 
 const sessionStore = new FileSessionStore(path.join(__dirname, '.data/yapper-session.json'));
-const client = new Client({ sessionStore });
+const client = new Client({ sessionStore, presence: { status: 'online' } });
 
 client.once(Events.ClientReady, readyClient => {
   console.log(`Ready as ${readyClient.user.username}`);
@@ -45,7 +64,7 @@ client.once(Events.ClientReady, readyClient => {
 client.on(Events.Error, error => console.error(error.message));
 
 client.on(Events.MessageCreate, async message => {
-  if (message.authorId === client.user.id) return;
+  if (message.authorId === client.userId) return;
   if (message.content === '!ping') await message.reply('Pong!');
 });
 
@@ -54,7 +73,7 @@ async function main() {
   const saved = await sessionStore.load();
   await client.login(saved ?? (process.env.YAPPER_SESSION || undefined));
 }
-main().catch(error => { console.error(error.message); client.destroy(); });
+main().catch(error => { console.error(error.message); client.destroy(); process.exitCode = 1; });
 ```
 
 ## Example / test bot
@@ -71,7 +90,9 @@ For the live bot, copy `.env.example` to `.env` and set `YAPPER_SESSION` or
 `YAPPER_VALUE`, or use your existing `YapperJS/session.json`. Then send `!help`
 from another account. Try `!ping`, `!echo Hello`, `!status`, `!test` (send/edit/react),
 and `!dm` to receive a private test message. Reaction menus, polls, and collectors
-are included too. See [the test bot guide](examples/test-bot/README.md) for setup,
+are included too. The test bot sends an online heartbeat at login and every
+45 seconds while running; `YAPPER_STATUS` and `YAPPER_ACTIVITY` customize its
+presence. See [the test bot guide](docs/test-bot.md) for setup,
 configuration, and adding commands. In PowerShell, use `npm.cmd` if `npm.ps1` is
 blocked by your execution policy.
 
@@ -116,8 +137,9 @@ may be needed. Supabase recovery exceptions are not a persistence guarantee.
 ## Persistence
 
 `FileSessionStore` preserves compatibility with the existing session.json. It stores
-plaintext credentials with owner-only file permissions and replaces the file using
-an atomic rename. File permissions are not encryption. Session files, temporary
+plaintext credentials with requested owner-only POSIX modes where supported and
+replaces the file using an atomic rename. Windows access follows filesystem ACLs.
+File permissions are not encryption. Session files, temporary
 files, backups and environment files are excluded by .gitignore.
 
 For encrypted local persistence, keep a separate random 32-byte key outside the file:
@@ -188,10 +210,17 @@ when only identity is needed. Message caches default to 200 records per channel;
 change `messageCacheMaxSize` to adjust this bound. Other caches reflect the bootstrap
 or explicitly fetched visible entities.
 
+Profile reads and profile-update responses select explicit public columns because
+Yapper denies wildcard profile selections. `user.displayAvatarURL()` uses Yapper's
+public media CDN; `Client({ mediaBaseUrl: 'https://your-media-host' })` overrides
+that host when needed.
+
 Only plain text and `{ content, replyTo }` message options are implemented. Unknown
-options throw. Attachments, embeds, Discord intents, slash commands, native Discord components,
-permissions wrappers, role management, voice, and full discord.js compatibility are outside
-this initial implementation. `before` is a date/timestamp, not a Discord snowflake.
+options throw. Attachment uploads, embeds, Discord intents, slash commands, native
+Discord components, effective-permission wrappers, voice, and full discord.js
+compatibility are outside this API. Role management is covered in
+[the customization and moderation guide](docs/customization-and-moderation.md).
+`before` is a date/timestamp, not a Discord snowflake.
 Message deletion currently removes the database message; attachment cleanup is not
 implemented. The server enforces permissions and content/rate limits.
 
@@ -274,8 +303,9 @@ The library constructs an empty router; only the example bot registers commands.
 Commands can specify ownerOnly, guildOnly, dmOnly, minArgs/maxArgs, hidden, and
 an async authorize(ctx) callback. Owner-only commands require an explicit owner
 ID in the configured owners list; there is no inferred trust from display names.
-Use `YAPPER_OWNER_IDS` for the example bot. Server/API permissions still apply.
-No destructive management commands are bundled.
+Use `YAPPER_OWNER_IDS` for the configurable `npm run example` bot. Server/API
+permissions still apply. That launcher registers owner-only moderation commands;
+the smaller `npm run bot` test bot omits them.
 
 ```js
 client.commands.register({
@@ -291,6 +321,9 @@ Events.CommandStart and CommandFinish receive context; CommandRejected receives
 context and `{ reason, retryAfter }`; CommandError receives a generic YapperError
 and context (parse failures provide message/command instead of parsed context).
 Application exceptions are not echoed into chat or attached to public errors.
+For HTTP failures, command errors retain a sanitized `error.request` object
+containing status, method, endpoint, API code, and retryAfter. Their log message
+includes those details without the API response body, query values, or tokens.
 `replyOnReject: true` enables short rejection/usage/cooldown replies; it defaults
 false in the library and true in the example bot.
 
@@ -386,7 +419,8 @@ emojis and customIds. setDisabled(id, true) disables handling locally; it does n
 remove the emoji or automatically edit the legend. Handlers run in sequence.
 ReactionInteraction has customId, button, user, reaction, message, reply(), update(),
 and stop(). There is no fake defer/reply acknowledgement API. Errors close the menu
-and report a generic error. Controls stop accepting input on timeout/deletion/destroy.
+and report an error with sanitized HTTP metadata when available. Controls stop
+accepting input on timeout/deletion/destroy.
 
 Yapper keeps a user's reaction until they toggle it off. To press the same control
 again, remove and re-add that reaction. The bot does not silently remove someone
@@ -408,6 +442,12 @@ const paginator = await channel.paginate(
 
 Confirm returns `{ confirmed, user, reason, message }`. Timeout/cancel returns false.
 Pagination supplies previous/next/close reactions and clamps page bounds.
+Pagination updates the original message in place. If an edit fails, the menu
+stops and reports the failure with sanitized HTTP metadata; it leaves the
+displayed page in place without posting additional page messages. The sample
+`!pages` command follows this same behavior. Yapper's observed 403/42501
+permission error currently blocks live page changes until its server-side
+message-edit permissions are fixed.
 Use the explicit async onSelect option when a menu action must complete before a
 one-shot menu closes; ordinary async 'select' event listeners follow EventEmitter
 semantics and are not awaited by emission.
@@ -862,7 +902,8 @@ The library never reads or writes a session inside its installed package by defa
 
 Run `npm test` and `npm run pack:check` from the repository root, then `npm pack`
 to produce the shareable tarball. The file allowlist includes JavaScript, ESM and
-declaration files under YapperJS plus npm metadata, README and MIT license. It
+declaration files under YapperJS, Markdown guides under docs, npm metadata, README,
+and MIT license. It
 excludes bot commands, examples, tests, .env, session JSON, backups and node_modules.
 The existing `YapperJS/` folder can also be packed directly for compatibility;
 the repository root is the canonical release package.

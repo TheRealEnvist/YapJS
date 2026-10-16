@@ -3,6 +3,7 @@ const { EventEmitter, captureRejectionSymbol } = require('node:events');
 const Collection = require('../util/Collection');
 const { text } = require('../util/validation');
 const { YapperError } = require('../util/errors');
+const { wrapError } = require('../util/diagnostics');
 const { emojiName } = require('../reactions');
 const { resolveId } = require('../managers');
 class ReactionButtonBuilder {
@@ -60,7 +61,7 @@ class ReactionMenu extends EventEmitter {
         const interaction = new ReactionInteraction(this, button, reaction, user); this.selected = interaction;
         if (options.onSelect) await options.onSelect(interaction);
         this.emit('select', interaction); if (options.once) this.stop('selected');
-      }).catch(() => { message.client._emitError(new YapperError('Reaction menu action failed.', 'MENU_ACTION_FAILED')); this.stop('error'); });
+      }).catch(error => { message.client._emitError(wrapError(error, 'Reaction menu action failed.', 'MENU_ACTION_FAILED')); this.stop('error'); });
     });
     this.collector.on('end', (collected, reason) => this.emit('end', collected, reason));
   }
@@ -117,7 +118,7 @@ class ReactionPoll extends EventEmitter {
       const results = this.results();
       if (options.updateOnEnd !== false && this.message.client.isReady() && !['messageDelete', 'channelDelete', 'guildDelete', 'clientDestroy', 'seedError'].includes(reason)) {
         try { await message.edit(`${options.question}\n\n${results.map(choice => `${choice.emoji} ${choice.label}: ${choice.votes}`).join('\n')}\n\nPoll closed.`); }
-        catch { message.client._emitError(new YapperError('Could not update poll results.', 'POLL_UPDATE_FAILED')); }
+        catch (error) { message.client._emitError(wrapError(error, 'Could not update poll results.', 'POLL_UPDATE_FAILED')); }
       }
       this.emit('end', results, reason); return { results, reason };
     });

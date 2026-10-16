@@ -31,6 +31,8 @@ export interface SessionStore {
 export interface ClientOptions {
   apiKey?: string;
   baseUrl?: string;
+  /** Public media CDN used for avatar URLs. Defaults to Yapper's media host. */
+  mediaBaseUrl?: string;
   gatewayUrl?: string;
   sessionStore?: SessionStore;
   realtime?: boolean;
@@ -172,7 +174,7 @@ export class Channel {
   awaitMessages(options?: CollectorOptions<[Message]>): Promise<Collection<string, Message>>;
   sendTyping(): boolean;
   sendReactionMenu(options: ReactionMenuSendOptions): Promise<ReactionMenu>;
-  paginate(pages: string[], options: ReactionAudience & ReactionTiming): Promise<ReactionMenu>;
+  paginate(pages: string[], options: ReactionPaginationOptions): Promise<ReactionMenu>;
   confirm(options: ReactionConfirmOptions): Promise<ConfirmationResult>;
   createPoll(options: ReactionPollOptions): Promise<ReactionPoll>;
   edit(options: EditChannelOptions): Promise<Channel>;
@@ -304,7 +306,11 @@ export class FileSessionStore implements SessionStore {
 export class EncryptedFileSessionStore extends FileSessionStore {
   constructor(filePath: string, key: string | Uint8Array);
 }
-export class YapperError extends Error { code: string; }
+export class YapperError extends Error {
+  code: string;
+  /** Sanitized HTTP metadata retained by command/menu/poll error wrappers. */
+  request?: Readonly<{ status: number; method: string; route: string; code: string; retryAfter: number | null }>;
+}
 export class YapperAPIError extends YapperError { status: number; method: string; route: string; retryAfter: number | null; }
 export class AuthenticationError extends YapperError {}
 export class SessionStorageError extends YapperError {}
@@ -438,6 +444,9 @@ export class ReactionButtonBuilder {
 }
 export type ReactionAudience = { allowedUserIds: (string | { id: string })[]; public?: false } | { public: true; allowedUserIds?: (string | { id: string })[] };
 export interface ReactionTiming { time?: number; idle?: number }
+export type ReactionPaginationOptions = ReactionAudience & ReactionTiming & {
+  onSelect?: (interaction: ReactionInteraction) => unknown | Promise<unknown>;
+};
 export type ReactionMenuOptions = ReactionAudience & ReactionTiming & {
   buttons: (ReactionButtonData | ReactionButtonBuilder)[];
   once?: boolean;
@@ -457,7 +466,7 @@ export class ReactionInteraction {
 export class ReactionMenu {
   static create(message: Message, options: ReactionMenuOptions): Promise<ReactionMenu>;
   static send(channel: Channel, options: ReactionMenuSendOptions): Promise<ReactionMenu>;
-  static paginate(channel: Channel, pages: string[], options: ReactionAudience & ReactionTiming): Promise<ReactionMenu>;
+  static paginate(channel: Channel, pages: string[], options: ReactionPaginationOptions): Promise<ReactionMenu>;
   static confirm(channel: Channel, options: ReactionConfirmOptions): Promise<ConfirmationResult>;
   readonly message: Message; readonly collector: ReactionCollector; readonly ended: boolean;
   readonly finished: ReactionCollector['finished'];

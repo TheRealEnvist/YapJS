@@ -3,21 +3,22 @@ const { randomUUID } = require('node:crypto');
 const Collection = require('../util/Collection');
 const { User, ClientUser, Channel, Guild, Message } = require('../structures');
 const { AuthenticationError, MessageBulkDeleteError } = require('../util/errors');
+const { profileFields } = require('../util/fields');
 function resolveId(value) { const id = typeof value === 'string' ? value : value?.id; if (typeof id !== 'string' || !id || id.length > 200 || /[\u0000-\u001f]/.test(id)) throw new TypeError('Expected an ID or an object with an ID.'); return id; }
 const eq = value => `eq.${value}`;
 function query(table, params) { return `/rest/v1/${table}?${new URLSearchParams(params)}`; }
 
 class BaseManager {
-  constructor(client, structure, table) { Object.defineProperty(this, 'client', { value: client }); this.cache = new Collection(); this.structure = structure; this.table = table; }
+  constructor(client, structure, table, select = '*') { Object.defineProperty(this, 'client', { value: client }); this.cache = new Collection(); this.structure = structure; this.table = table; this._select = select; }
   resolve(value) { return value instanceof this.structure ? value : this.cache.get(resolveId(value)) ?? null; }
   _add(data) { if (!data?.id) throw new TypeError('API entity is missing an ID.'); const existing = this.cache.get(data.id); if (existing) { existing._patch(data); return existing; } const entity = new this.structure(this.client, data); this.cache.set(entity.id, entity); return entity; }
   async fetch(value, { force = false } = {}) {
-    if (value === undefined) { if (!force) return this.cache; const rows = await this.client.rest.get(query(this.table, { select: '*' })); for (const row of rows ?? []) this._add(row); return this.cache; }
+    if (value === undefined) { if (!force) return this.cache; const rows = await this.client.rest.get(query(this.table, { select: this._select })); for (const row of rows ?? []) this._add(row); return this.cache; }
     const id = resolveId(value); if (!force && this.cache.has(id)) return this.cache.get(id);
-    const rows = await this.client.rest.get(query(this.table, { select: '*', id: eq(id), limit: '1' })); return rows?.[0] ? this._add(rows[0]) : null;
+    const rows = await this.client.rest.get(query(this.table, { select: this._select, id: eq(id), limit: '1' })); return rows?.[0] ? this._add(rows[0]) : null;
   }
 }
-class UserManager extends BaseManager { constructor(client) { super(client, User, 'profiles'); } createDM(user, options) { return this.client.dms.create(user, options); } send(user, content) { return this.client.dms.send(user, content); } }
+class UserManager extends BaseManager { constructor(client) { super(client, User, 'profiles', profileFields); } createDM(user, options) { return this.client.dms.create(user, options); } send(user, content) { return this.client.dms.send(user, content); } }
 class ChannelManager extends BaseManager {
   constructor(client) { super(client, Channel, 'channels'); }
   async fetchGuild(guild) { const id = resolveId(guild); const rows = await this.client.rest.get(query('channels', { select: '*', server_id: eq(id) })); return new Collection((rows ?? []).map(row => { const channel = this._add(row); return [channel.id, channel]; })); }

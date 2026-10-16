@@ -3,6 +3,7 @@ const { User } = require('./index');
 const { AuthenticationError, YapperError } = require('../util/errors');
 const { objectOptions, text } = require('../util/validation');
 const { Events } = require('../util/constants');
+const { profileFields } = require('../util/fields');
 
 class ClientUser extends User {
   get presence() { return this.client.presence; }
@@ -26,7 +27,7 @@ class ClientUser extends User {
       }
     }
     if (!Object.keys(patch).length) throw new TypeError('Supply at least one profile field.');
-    const params = new URLSearchParams({ id: `eq.${this.id}`, select: '*' });
+    const params = new URLSearchParams({ id: `eq.${this.id}`, select: profileFields });
     const rows = await this.client.rest.patch(`/rest/v1/profiles?${params}`, patch, { headers: { Prefer: 'return=representation' } });
     if (!Array.isArray(rows) || rows.length !== 1 || rows[0].id !== this.id) throw new YapperError('Profile update returned no matching record.', 'PROFILE_UPDATE_FAILED');
     const previous = new User(this.client, {}); Object.assign(previous, this);

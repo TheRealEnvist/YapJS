@@ -13,7 +13,11 @@ class User extends Base {
     for (const [key, value] of Object.entries({ username: data.username ?? metadata.username, displayName: data.display_name !== undefined ? data.display_name : metadata.display_name, avatar: data.avatar_path !== undefined ? data.avatar_path : metadata.avatar_path, banner: data.banner_path, bio: data.bio, customStatus: data.custom_status, pronouns: data.pronouns, accentColor: data.accent_color, accentColor2: data.accent_color2, bot: data.is_bot ?? metadata.is_bot })) if (value !== undefined) this[key] = value;
     return this;
   }
-  displayAvatarURL() { return this.avatar ? `${this.client.rest.baseUrl}/storage/v1/object/public/avatars/${this.avatar.split('/').map(encodeURIComponent).join('/')}` : null; }
+  displayAvatarURL() {
+    if (!this.avatar) return null;
+    if (this.avatar.startsWith('/')) return new URL(this.avatar, 'https://www.yapper.website').href;
+    return `${this.client.options.mediaBaseUrl}/avatars/${this.avatar.split('/').map(encodeURIComponent).join('/')}`;
+  }
   get dmChannel() { return this.client.dms._find(this.id) ?? null; }
   createDM(options) { return this.client.dms.create(this.id, options); }
   async send(content) { return (await this.createDM()).send(content); }

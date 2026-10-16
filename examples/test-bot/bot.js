@@ -1,6 +1,6 @@
 'use strict';
 const path = require('node:path');
-const { Client, Events, FileSessionStore, EncryptedFileSessionStore } = require('yapperjs');
+const { Client, Events, FileSessionStore, EncryptedFileSessionStore, YapperAPIError } = require('yapperjs');
 
 const root = path.resolve(__dirname, '../..');
 
@@ -8,6 +8,7 @@ const root = path.resolve(__dirname, '../..');
 // the same commands with a mock fetch implementation, or add your own commands.
 function createTestBot({ logger = console, ...options } = {}) {
   const client = new Client({
+    presence: { status: 'online' },
     ...options,
     commands: { prefix: '!', cooldown: 1000, replyOnReject: true, ...options.commands },
   });
@@ -33,9 +34,19 @@ function createTestBot({ logger = console, ...options } = {}) {
     name: 'test', description: 'Test sending, editing, and reacting to a bot message', cooldown: 10000,
     async execute(ctx) {
       const message = await ctx.reply('Testing message send...');
-      await message.edit('Message send and edit: OK');
-      await message.react('\u2705');
-      await ctx.reply(`Send, edit, and reaction tests passed. Try ${ctx.prefix}dm to test private messages.`);
+      const results = ['Send: OK'];
+      async function check(label, action) {
+        try { await action(); results.push(`${label}: OK`); }
+        catch (error) {
+          const detail = error instanceof YapperAPIError ? `Yapper API ${error.status || 'network'} (${error.code})` : 'see the bot console';
+          const request = error instanceof YapperAPIError ? ` ${error.method} ${error.route}` : '';
+          logger.error(`Test ${label.toLowerCase()} failed: ${detail}${request}`);
+          results.push(`${label}: failed (${detail})`);
+        }
+      }
+      await check('Edit', () => message.edit('Message send and edit: OK'));
+      await check('Reaction', () => message.react('\u2705'));
+      await ctx.reply(`${results.join('\n')}\nTry ${ctx.prefix}dm to test private messages.`);
     },
   });
   client.commands.register({
@@ -88,6 +99,10 @@ async function startTestBot({ env = process.env, ...options } = {}) {
   const client = createTestBot({
     apiKey: env.YAPPER_API_KEY || undefined,
     commands: { prefix: env.YAPPER_PREFIX || '!' },
+    presence: {
+      status: env.YAPPER_STATUS || 'online',
+      ...(env.YAPPER_ACTIVITY ? { activity: env.YAPPER_ACTIVITY } : {}),
+    },
     ...options,
     sessionStore,
   });

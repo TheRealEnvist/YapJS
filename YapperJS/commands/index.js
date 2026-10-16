@@ -4,6 +4,7 @@ const path = require('node:path');
 const Collection = require('../util/Collection');
 const { Events } = require('../util/constants');
 const { YapperError } = require('../util/errors');
+const { wrapError } = require('../util/diagnostics');
 const { resolveId } = require('../managers');
 
 function parseArguments(input) {
@@ -41,7 +42,7 @@ class CommandManager {
     this.ignoreBots = options.ignoreBots !== false; this.replyOnReject = options.replyOnReject === true;
     if (!(typeof this.prefix === 'function' || typeof this.prefix === 'string' || Array.isArray(this.prefix) && this.prefix.every(value => typeof value === 'string'))) throw new TypeError('prefix must be text, an array of prefixes or a function.');
     if (!Number.isFinite(this.cooldown) || this.cooldown < 0) throw new RangeError('Command cooldown is nonnegative milliseconds.');
-    this.#listener = message => { this.handle(message).catch(() => this.client._emitError(new YapperError('Command processing failed.', 'COMMAND_FAILED'))); };
+    this.#listener = message => { this.handle(message).catch(error => this.client._emitError(wrapError(error, 'Command processing failed.', 'COMMAND_FAILED'))); };
     client.on(Events.MessageCreate, this.#listener);
   }
   register(command) {
@@ -97,8 +98,8 @@ class CommandManager {
       const cooldown = command.cooldown ?? this.cooldown; if (cooldown > 0) this.#cooldowns.set(key, now + cooldown);
       while (this.#cooldowns.size > 10000) this.#cooldowns.delete(this.#cooldowns.keys().next().value);
       this.client.emit(Events.CommandStart, context); await command.execute(context); this.client.emit(Events.CommandFinish, context); return true;
-    } catch {
-      this.client.emit(Events.CommandError, new YapperError('Command handler failed.', 'COMMAND_FAILED'), context); return false;
+    } catch (error) {
+      this.client.emit(Events.CommandError, wrapError(error, 'Command handler failed.', 'COMMAND_FAILED'), context); return false;
     }
   }
   addHelpCommand({ name = 'help' } = {}) {

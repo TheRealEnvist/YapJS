@@ -13,7 +13,7 @@ async function runDemo(logger = console) {
   try {
     logger.log('Offline demo: fake account, in-memory API, no network or session files.');
     await client.login(api.session);
-    for (const content of ['!ping', '!echo Hello from YapperJS!', '!status', '!test', '!dm Hello privately!', '!help']) {
+    for (const content of ['!ping', '!echo Hello from YapperJS!', '!avatar', '!userinfo', '!status', '!test', '!dm Hello privately!', '!help']) {
       logger.log(`\nTester: ${content}`);
       if (!await client.commands.handle(api.incoming(client, content))) throw new Error(`Demo command failed: ${content}`);
     }

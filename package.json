@@ -37,7 +37,8 @@
     "YapperJS/**/*.js",
     "YapperJS/**/*.mjs",
     "YapperJS/**/*.d.ts",
-    "YapperJS/package.json"
+    "YapperJS/package.json",
+    "docs/**/*.md"
   ],
   "scripts": {
     "test": "node --test test/*.test.js",

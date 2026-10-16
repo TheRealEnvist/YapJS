@@ -21,10 +21,12 @@ class Client extends EventEmitter {
     const envApiKey = process.env.YAPPER_API_KEY;
     const apiKey = options.apiKey ?? (envApiKey?.trim() ? envApiKey : require('./global').apiKey);
     if (typeof apiKey !== 'string' || !apiKey.trim()) throw new TypeError('Set options.apiKey or YAPPER_API_KEY to the public project key.');
+    const mediaBaseUrl = options.mediaBaseUrl ?? require('./global').mediaBaseUrl;
+    if (typeof mediaBaseUrl !== 'string' || new URL(mediaBaseUrl).protocol !== 'https:') throw new TypeError('mediaBaseUrl must use HTTPS.');
     Object.defineProperty(this, 'apiKey', { value: apiKey });
     const messageCacheMaxSize = options.messageCacheMaxSize ?? 200;
     if (!Number.isInteger(messageCacheMaxSize) || messageCacheMaxSize < 1) throw new TypeError('messageCacheMaxSize must be a positive integer.');
-    this.options = Object.freeze({ realtime: options.realtime !== false, messageCacheMaxSize, presence: options.presence === undefined ? undefined : validatePresence(options.presence) });
+    this.options = Object.freeze({ realtime: options.realtime !== false, messageCacheMaxSize, mediaBaseUrl: mediaBaseUrl.replace(/\/$/, ''), presence: options.presence === undefined ? undefined : validatePresence(options.presence) });
     this.rest = new REST(this, options); this.auth = new AuthManager(this, options); this.gateway = new Gateway(this, options); this.presence = new PresenceManager(this, options.presenceInterval);
     this.users = new UserManager(this); this.channels = new ChannelManager(this); this.guilds = new GuildManager(this); this.servers = this.guilds; this.dms = new DMManager(this);
     Object.defineProperty(this, '_authUser', { value: null, writable: true });

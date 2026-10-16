@@ -14,16 +14,19 @@ test('packed library excludes credentials/examples and installs with matching Co
     const source = path.join(directory, 'source'), consumer = path.join(directory, 'consumer'), cache = path.join(directory, 'cache');
     await fs.mkdir(source); await fs.mkdir(consumer);
     await fs.cp(path.join(root, 'YapperJS'), path.join(source, 'YapperJS'), { recursive: true, filter: file => !/session(?:\.enc)?\.json$/.test(file) });
+    await fs.cp(path.join(root, 'docs'), path.join(source, 'docs'), { recursive: true });
     for (const file of ['package.json', 'README.md', 'LICENSE']) await fs.copyFile(path.join(root, file), path.join(source, file));
     await fs.writeFile(path.join(source, 'YapperJS/session.json'), '{"refresh_token":"FAKE_PACKAGE_SECRET"}');
     await fs.writeFile(path.join(source, '.env'), 'YAPPER_SESSION=FAKE_PACKAGE_SECRET');
     await fs.mkdir(path.join(source, 'examples')); await fs.writeFile(path.join(source, 'examples/bot.js'), 'throw Error("Do not ship me");');
     const packed = JSON.parse(runNpm(['pack', '--json', '--ignore-scripts', '--cache', cache], { cwd: source, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))[0];
     const files = packed.files.map(file => file.path);
+    for (const name of (await fs.readdir(path.join(root, 'docs'))).filter(name => name.endsWith('.md'))) assert.ok(files.includes(`docs/${name}`), `Missing documentation: ${name}`);
     assert.ok(files.includes('YapperJS/index.mjs')); assert.ok(files.includes('LICENSE')); assert.ok(!files.some(file => /session.*\.json|\.env|^(?:examples|bot|test)\//.test(file)));
     const archive = path.join(source, packed.filename);
     await fs.writeFile(path.join(consumer, 'package.json'), '{"name":"consumer-test","private":true}');
     runNpm(['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--no-package-lock', '--cache', cache, archive], { cwd: consumer, stdio: ['ignore', 'pipe', 'pipe'] });
+    assert.match(await fs.readFile(path.join(consumer, 'node_modules/yapperjs/docs/README.md'), 'utf8'), /YapperJS documentation/);
     await fs.writeFile(path.join(consumer, 'smoke.cjs'), `
       const assert = require('node:assert/strict');
       globalThis.fetch = () => { throw new Error('Library import must not start requests'); };
