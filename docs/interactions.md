@@ -52,7 +52,7 @@ its channel; add an author filter to avoid collecting someone else's reply.
 An await helper returns a Collection:
 
 ```js
-const { CollectorError } = require('yapjs');
+const { CollectorError } = require('@therealenvist/yapjs');
 try {
   const replies = await channel.awaitMessages({
     filter: reply => reply.authorId === 'USER_ID',
@@ -110,7 +110,7 @@ Deleting the relevant entity or destroying the client cleans up active collector
 ## Reaction menus
 
 ```js
-const { ReactionButtonBuilder } = require('yapjs');
+const { ReactionButtonBuilder } = require('@therealenvist/yapjs');
 const menu = await channel.sendReactionMenu({
   content: 'Choose an action. Only you can use these controls.',
   allowedUserIds: ['USER_ID'],

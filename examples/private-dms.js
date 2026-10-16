@@ -1,7 +1,7 @@
 'use strict';
-// Run explicitly from your own project after installing yapjs.
+// Run explicitly from your own project after installing @therealenvist/yapjs.
 const path = require('node:path');
-const { Client, Events, FileSessionStore } = require('yapjs');
+const { Client, Events, FileSessionStore } = require('@therealenvist/yapjs');
 const sessionStore = new FileSessionStore(path.resolve('.data/yapper-session.json'));
 const client = new Client({ sessionStore });
 client.on(Events.MessageCreate, async message => {

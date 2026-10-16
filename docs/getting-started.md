@@ -28,7 +28,7 @@ npm init -y
 Install a published release:
 
 ```sh
-npm install yapjs
+npm install @therealenvist/yapjs
 ```
 
 If the package is not published under that name yet, choose one of these sources
@@ -37,11 +37,11 @@ instead. Run the install command from **your bot project's folder**:
 | Source | Command | Requirement |
 | --- | --- | --- |
 | Local checkout | `npm install /absolute/path/to/YapJS` | Point to the repository root, which contains `package.json` and `docs/` |
-| Package archive | `npm install ./yapjs-0.7.0.tgz` | Obtain an archive created with `npm pack`; use its actual filename |
+| Package archive | `npm install ./therealenvist-yapjs-0.7.0.tgz` | Obtain an archive created with `npm pack`; use its actual filename |
 | GitHub | `npm install github:TheRealEnvist/YapJS` | The desired version must be pushed; append `#TAG_OR_COMMIT` to pin it |
 
-The examples below import `yapjs`, the package name in this repository. If a
-release uses a scoped name, use that name in both the install command and imports.
+The npm package name is **`@therealenvist/yapjs`**. Use the complete scoped name
+in both install commands and imports; the project is called YapJS.
 
 ## Get a session
 
@@ -76,7 +76,7 @@ Save this as **`bot.cjs`** next to your project's `package.json` and `.env`:
 
 ```js
 const path = require('node:path');
-const { Client, Events, FileSessionStore } = require('yapjs');
+const { Client, Events, FileSessionStore } = require('@therealenvist/yapjs');
 
 const store = new FileSessionStore(path.join(__dirname, '.data/session.json'));
 const client = new Client({
@@ -156,7 +156,7 @@ Use named imports in a `.mjs` file or a project configured for ESM:
 
 ```js
 import { fileURLToPath } from 'node:url';
-import { Client, Events, FileSessionStore } from 'yapjs';
+import { Client, Events, FileSessionStore } from '@therealenvist/yapjs';
 
 const client = new Client({
   sessionStore: new FileSessionStore(fileURLToPath(new URL('./.data/session.json', import.meta.url))),
@@ -172,7 +172,7 @@ TypeScript declarations ship with YapJS; no separate `@types` package is
 required. For example:
 
 ```ts
-import { Client, type CommandDefinition } from 'yapjs';
+import { Client, type CommandDefinition } from '@therealenvist/yapjs';
 
 const client = new Client();
 const ping: CommandDefinition = {

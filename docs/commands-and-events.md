@@ -32,7 +32,7 @@ The parser is also available separately when you need to inspect command-like
 arguments without routing a message:
 
 ```js
-const { parseArguments } = require('yapjs');
+const { parseArguments } = require('@therealenvist/yapjs');
 console.log(parseArguments('one "two words"')); // ['one', 'two words']
 ```
 
@@ -158,7 +158,7 @@ Rejection reasons include `ownerOnly`, `guildOnly`, `dmOnly`, `authorization`,
 successful execution returns true. Ignored/rejected messages also return false.
 
 ```js
-const { Events } = require('yapjs');
+const { Events } = require('@therealenvist/yapjs');
 client.on(Events.CommandError, (error, ctx) => {
   console.error(ctx.command.name, error.message);
   if (error.request) {

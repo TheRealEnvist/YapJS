@@ -115,7 +115,7 @@ can be retried on an undestroyed client. A destroyed client requires a new insta
 tests and short-lived programs. Restarting the process loses the stored session.
 
 ```js
-const { Client, MemorySessionStore } = require('yapjs');
+const { Client, MemorySessionStore } = require('@therealenvist/yapjs');
 const client = new Client({ sessionStore: new MemorySessionStore() });
 ```
 
@@ -123,7 +123,7 @@ const client = new Client({ sessionStore: new MemorySessionStore() });
 
 ```js
 const path = require('node:path');
-const { Client, FileSessionStore } = require('yapjs');
+const { Client, FileSessionStore } = require('@therealenvist/yapjs');
 const store = new FileSessionStore(path.join(__dirname, '.data/session.json'));
 const client = new Client({ sessionStore: store });
 ```
@@ -152,7 +152,7 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
 Keep it separately from the encrypted file. In your application:
 
 ```js
-const { Client, EncryptedFileSessionStore } = require('yapjs');
+const { Client, EncryptedFileSessionStore } = require('@therealenvist/yapjs');
 const store = new EncryptedFileSessionStore(
   './.data/session.enc.json',
   process.env.YAPPER_SESSION_KEY,
@@ -212,7 +212,7 @@ process crash after exchange and before save can still require reauthentication.
 Use the metadata events to observe recovery without logging credentials:
 
 ```js
-const { Events } = require('yapjs');
+const { Events } = require('@therealenvist/yapjs');
 client.on(Events.TokenRefresh, ({ expiresAt }) => {
   console.log('Replacement session saved; expires at', expiresAt);
 });

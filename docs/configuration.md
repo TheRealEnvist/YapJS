@@ -40,7 +40,7 @@ the initial delay. Invalid validated options throw during construction, before
 login.
 
 ```js
-const { Client, FileSessionStore } = require('yapjs');
+const { Client, FileSessionStore } = require('@therealenvist/yapjs');
 
 const client = new Client({
   sessionStore: new FileSessionStore('./.data/session.json'),
@@ -90,7 +90,7 @@ const client = new Client({
 });
 ```
 
-Here `Client` and `FileSessionStore` are imports from `yapjs`. The application
+Here `Client` and `FileSessionStore` are imports from `@therealenvist/yapjs`. The application
 chooses the environment names and fallback values. `YAPPER_VALUE` and
 `YAPPER_SESSION` become login inputs only when your code passes them to `login()`.
 Likewise, encryption requires constructing `EncryptedFileSessionStore`; setting

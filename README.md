@@ -12,7 +12,7 @@ with no runtime dependencies. Licensed under MIT.
 For a published npm release:
 
 ```sh
-npm install yapjs
+npm install @therealenvist/yapjs
 ```
 
 If the package has not been published under that name yet, install the repository
@@ -20,8 +20,8 @@ root from a local checkout instead: `npm install /absolute/path/to/YapJS`.
 See [installation options](docs/getting-started.md#install) for Git and tarball installs.
 
 ```js
-const { Client, Events, FileSessionStore } = require('yapjs');
-// ESM: import { Client, Events, FileSessionStore } from 'yapjs';
+const { Client, Events, FileSessionStore } = require('@therealenvist/yapjs');
+// ESM: import { Client, Events, FileSessionStore } from '@therealenvist/yapjs';
 ```
 
 ## Create your first bot
@@ -47,7 +47,7 @@ browser tabs before using that session in the bot.
 
 ```js
 const path = require('node:path');
-const { Client, Events, FileSessionStore } = require('yapjs');
+const { Client, Events, FileSessionStore } = require('@therealenvist/yapjs');
 
 const store = new FileSessionStore(path.join(__dirname, '.data/session.json'));
 const client = new Client({

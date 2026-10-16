@@ -1,5 +1,5 @@
 "use strict";
-const { Events } = require('yapjs');
+const { Events } = require('@therealenvist/yapjs');
 
 module.exports = function registerEvents(client, options = {}) {
   const log = options.log ?? console.log;

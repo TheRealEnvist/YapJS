@@ -1,5 +1,5 @@
 'use strict';
-const { Message } = require('yapjs');
+const { Message } = require('@therealenvist/yapjs');
 
 // An in-memory API for the demo and tests. Every request stays in this process;
 // unsupported routes fail instead of falling back to the real Yapper API.

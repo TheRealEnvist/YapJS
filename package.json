@@ -1,5 +1,5 @@
 {
-  "name": "yapjs",
+  "name": "@therealenvist/yapjs",
   "version": "0.7.0",
   "description": "An unofficial, dependency-free Node.js library for building Yapper bots",
   "type": "commonjs",
@@ -22,6 +22,9 @@
   },
   "homepage": "https://github.com/TheRealEnvist/YapJS#readme",
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./YapperJS/index.js",
   "types": "./YapperJS/index.d.ts",
   "exports": {

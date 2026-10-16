@@ -3,7 +3,7 @@
 [Documentation index](README.md)
 
 These examples use the **YapJS package in your own project**. Start with
-[Getting started](getting-started.md) to install `yapjs`, obtain your session, and
+[Getting started](getting-started.md) to install `@therealenvist/yapjs`, obtain your session, and
 set up `.env`, `.gitignore`, and persistent login.
 
 | Build | Example |
@@ -55,7 +55,7 @@ visible to the bot. Choose a text channel in the intended server.
 
 ```js
 const path = require('node:path');
-const { Client, Events, FileSessionStore } = require('yapjs');
+const { Client, Events, FileSessionStore } = require('@therealenvist/yapjs');
 
 const store = new FileSessionStore(path.join(__dirname, '.data/session.json'));
 const client = new Client({

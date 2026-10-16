@@ -2,7 +2,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { once } = require('node:events');
-const { Events, MemorySessionStore } = require('yapjs');
+const { Events, MemorySessionStore } = require('@therealenvist/yapjs');
 const { createTestBot, startTestBot } = require('../examples/test-bot/bot');
 const { createMockAPI } = require('../examples/test-bot/mock-api');
 const { runDemo } = require('../examples/test-bot/demo');

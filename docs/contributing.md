@@ -20,7 +20,7 @@ start with [Getting started](getting-started.md) and the [API reference](api.md)
 The nested `YapperJS/package.json` is retained for compatibility with direct
 installation of that directory. Publish the repository root to include the guides.
 
-The public package is now **YapJS** (`yapjs` on npm). The implementation folder
+The project is **YapJS**, published as `@therealenvist/yapjs`. The implementation folder
 keeps its legacy `YapperJS/` name so existing local imports and session paths keep
 working. Repository links still point to the current GitHub repository. The
 encrypted session format is unchanged, so saved sessions remain readable.
@@ -62,15 +62,15 @@ README, license, and package metadata. It excludes example code, tests,
 Install that archive into another project to check it as a dependency:
 
 ```sh
-npm install /path/to/yapjs-0.7.0.tgz
+npm install /path/to/therealenvist-yapjs-0.7.0.tgz
 ```
 
 Use the filename for the version you packed.
 
 ## Publish a release
 
-Choose an available package name or a name your npm account can publish, and an
-unused version. With checks passing, preview and then publish from the root:
+This package uses the `@therealenvist` npm user scope. Log in with that account
+and use an unused version. With checks passing, preview and publish from the root:
 
 ```sh
 npm publish --dry-run
@@ -79,8 +79,9 @@ npm whoami
 npm publish --access public
 ```
 
-The final command uploads a public release. Follow npm's authentication prompts
-and [publishing requirements](https://docs.npmjs.com/creating-and-publishing-unscoped-public-packages/).
+The final command uploads a public release. Both manifests also set
+`publishConfig.access` to `public`. Follow npm's authentication prompts and
+[scoped publishing requirements](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/).
 Each subsequent release needs a new version; an existing name/version pair
 cannot be overwritten. Keep the compatibility metadata consistent when bumping
 versions. If you change the package name, update imports and documentation too.

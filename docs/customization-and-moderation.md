@@ -191,7 +191,7 @@ are validated before deletion begins.
 Deletion is sequential, not atomic. A failed batch stops at the first failure:
 
 ```js
-const { MessageBulkDeleteError } = require('yapjs');
+const { MessageBulkDeleteError } = require('@therealenvist/yapjs');
 try {
   await channel.bulkDelete(['MESSAGE_1', 'MESSAGE_2']);
 } catch (error) {

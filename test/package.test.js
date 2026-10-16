@@ -26,14 +26,14 @@ test('packed library excludes credentials/examples and installs with matching Co
     const archive = path.join(source, packed.filename);
     await fs.writeFile(path.join(consumer, 'package.json'), '{"name":"consumer-test","private":true}');
     runNpm(['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--no-package-lock', '--cache', cache, archive], { cwd: consumer, stdio: ['ignore', 'pipe', 'pipe'] });
-    assert.match(await fs.readFile(path.join(consumer, 'node_modules/yapjs/docs/README.md'), 'utf8'), /YapJS documentation/);
+    assert.match(await fs.readFile(path.join(consumer, 'node_modules/@therealenvist/yapjs/docs/README.md'), 'utf8'), /YapJS documentation/);
     await fs.writeFile(path.join(consumer, 'smoke.cjs'), `
       const assert = require('node:assert/strict');
       globalThis.fetch = () => { throw new Error('Library import must not start requests'); };
       const before = process.listenerCount('SIGINT');
-      const api = require('yapjs');
+      const api = require('@therealenvist/yapjs');
       (async () => {
-        const esm = await import('yapjs');
+        const esm = await import('@therealenvist/yapjs');
         for (const key of Object.keys(api)) assert.equal(esm[key], api[key], key);
         const client = new api.Client({ realtime: false });
         assert.equal(client.isReady(), false); assert.equal(client.user, null); assert.equal(client.token, null);
