@@ -38,7 +38,7 @@ instead. Run the install command from **your bot project's folder**:
 | --- | --- | --- |
 | Local checkout | `npm install /absolute/path/to/YapJS` | Point to the repository root, which contains `package.json` and `docs/` |
 | Package archive | `npm install ./yapjs-0.7.0.tgz` | Obtain an archive created with `npm pack`; use its actual filename |
-| GitHub | `npm install github:TheRealEnvist/YapperJS` | The desired version must be pushed; append `#TAG_OR_COMMIT` to pin it |
+| GitHub | `npm install github:TheRealEnvist/YapJS` | The desired version must be pushed; append `#TAG_OR_COMMIT` to pin it |
 
 The examples below import `yapjs`, the package name in this repository. If a
 release uses a scoped name, use that name in both the install command and imports.

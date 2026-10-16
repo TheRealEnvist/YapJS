@@ -15,12 +15,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TheRealEnvist/YapperJS.git"
+    "url": "git+https://github.com/TheRealEnvist/YapJS.git"
   },
   "bugs": {
-    "url": "https://github.com/TheRealEnvist/YapperJS/issues"
+    "url": "https://github.com/TheRealEnvist/YapJS/issues"
   },
-  "homepage": "https://github.com/TheRealEnvist/YapperJS#readme",
+  "homepage": "https://github.com/TheRealEnvist/YapJS#readme",
   "sideEffects": false,
   "main": "./index.js",
   "types": "./index.d.ts",

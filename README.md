@@ -178,7 +178,7 @@ compatibility are not implemented. Yapper enforces permissions and API limits;
 realtime delivery is best-effort. See [capabilities and limits](docs/README.md#capabilities-and-limits).
 
 For an API failure, check [Troubleshooting](docs/troubleshooting.md) and include
-the sanitized error in an [issue](https://github.com/TheRealEnvist/YapperJS/issues).
+the sanitized error in an [issue](https://github.com/TheRealEnvist/YapJS/issues).
 
 ## Repository examples and contributing
 
