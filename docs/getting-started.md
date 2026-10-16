@@ -2,106 +2,77 @@
 
 [Documentation index](README.md)
 
+This guide builds a bot in **your own project** using the YapperJS package.
+By the end, your bot will log in, stay online, and answer `!ping` and `!help` in
+server channels and DMs.
+
 ## Requirements
 
-Use Node.js 22 or newer. The library relies on Node's built-in `fetch`,
-`WebSocket`, environment-file loader in the launchers, and test runner. npm is
-needed for the repository scripts and package checks. There are no library
-runtime dependencies to install in this checkout.
+- Node.js **22 or newer** and npm.
+- A Yapper account to run as the bot, with access to the channels you want to use.
+- Another account to send commands to it; the router ignores its own messages.
 
-Check your tools in PowerShell:
+YapperJS has no runtime dependencies. In PowerShell, use `npm.cmd` in place of
+`npm` if your execution policy blocks `npm.ps1`.
 
-```powershell
-node --version
-npm.cmd --version
+## Install
+
+Create a project folder and initialize it:
+
+```sh
+mkdir my-yapper-bot
+cd my-yapper-bot
+npm init -y
 ```
 
-Use `npm.cmd` when PowerShell blocks `npm.ps1` under its execution policy. In
-other shells, the normal `npm` spelling is sufficient.
+Install a published release:
 
-## Run the included test bot
-
-Run these commands from the repository root, which contains `package.json`:
-
-```powershell
-npm.cmd run bot:demo
-npm.cmd run test:bot
+```sh
+npm install yapperjs
 ```
 
-The demo uses fake accounts and an in-memory API with the actual client and
-command router. It does not load `.env`, touch session files, or connect to
-Yapper. Its output shows ping, echo, profile lookup, status, message editing,
-reactions, DMs, and help. A successful simulated edit does not establish that
-Yapper's live API permits editing.
+If the package is not published under that name yet, choose one of these sources
+instead. Run the install command from **your bot project's folder**:
 
-For a live connection:
-
-1. If `.env` does not exist, copy the template:
-
-   ```powershell
-   Copy-Item .env.example .env
-   ```
-
-2. Use your own independent bot session. Existing
-   `YapperJS/session.json` is restored automatically. On first use, supply an
-   authorized session through `YAPPER_SESSION` or `YAPPER_VALUE` in `.env`.
-   [Find your bot token in the browser](authentication.md#find-your-bot-token-in-the-browser)
-   explains how to copy the `yp:1n00fw` value into `YAPPER_VALUE`.
-   [Authentication](authentication.md#accepted-login-inputs) describes each input.
-3. Start the bot:
-
-   ```powershell
-   npm.cmd run bot
-   ```
-
-4. Wait for `Ready as ...`, then send `!help` from another account in a channel
-   the bot can access, or DM it. The router ignores the bot's own messages.
-5. Try `!ping`, `!avatar`, `!userinfo`, `!status`, and `!dm hello`.
-6. Stop with Ctrl+C. Restart after changing code or `.env`; these launchers do
-   not watch files for changes.
-
-The test bot marks itself online at login and renews that presence every 45
-seconds. See [Configuration](configuration.md#online-heartbeats).
-
-## Choose the right launcher
-
-| Command or entry point | Purpose | Commands and presence |
+| Source | Command | Requirement |
 | --- | --- | --- |
-| `npm run bot` | Test bot in `examples/test-bot/bot.js` | Demonstration commands; online heartbeat by default |
-| `npm run bot:demo` | Offline demonstration | Same test-bot command code against a fake API |
-| `npm run example` | Configurable sample in `examples/bot/bot.js` | Demonstration and owner-only moderation commands; presence only when configured |
-| `node bot/bot.js` | Compatibility launcher | Forwards to `npm run example`'s bot |
-| `examples/private-dms.js` | Minimal standalone DM example | Replies to `!ping` in DMs; uses `.data/yapper-session.json` relative to the working directory |
+| Local checkout | `npm install /absolute/path/to/YapperJS` | Point to the repository root, which contains `package.json` and `docs/` |
+| Package archive | `npm install ./yapperjs-0.7.0.tgz` | Obtain an archive created with `npm pack`; use its actual filename |
+| GitHub | `npm install github:TheRealEnvist/YapperJS` | The desired version must be pushed; append `#TAG_OR_COMMIT` to pin it |
 
-The DM example does not load `.env` itself. Start it with an environment loader
-or supply variables in your shell. Its session file is separate from the default
-test-bot file. See [environment-variable scope](configuration.md#environment-variable-scope).
+The examples below import `yapperjs`, the package name in this repository. If a
+release uses a scoped name, use that name in both the install command and imports.
 
-## Install the library in another project
+## Get a session
 
-From a consuming project, install the repository root as a local dependency:
+Sign in to the bot's account in a browser. Open developer tools, select
+**Application → Local Storage** (Chrome/Edge) or **Storage → Local Storage**
+(Firefox), and copy the complete **Value** of **`yp:1n00fw`** for the Yapper site.
 
-```sh
-npm install /absolute/path/to/YapperJS
+Create `.env` in your bot project:
+
+```dotenv
+YAPPER_VALUE='PASTE_THE_COMPLETE_yp:1n00fw_VALUE_HERE'
 ```
 
-For a portable archive, run `npm pack` from the repository root and install the
-resulting tarball in the consuming project:
+This is an encoded account session. Keep it private, and close that account's
+Yapper browser tabs before starting the bot with it. The
+[authentication walkthrough](authentication.md#find-your-bot-token-in-the-browser)
+has detailed steps and alternative session formats.
 
-```sh
-npm install ./yapperjs-0.7.0.tgz
+Create `.gitignore` in the same project:
+
+```gitignore
+node_modules/
+.env
+.data/
 ```
 
-The version in that filename follows `package.json`. This repository does not
-establish that `yapperjs` is currently published on npm. Registry installation
-requires the maintainer to publish it; a Git URL requires the relevant changes
-to be pushed. The root package is canonical and bundles `docs/`. The nested
-`YapperJS/` package remains a library-only compatibility option.
+Your application will save refreshed credentials in `.data/session.json`.
 
 ## Complete CommonJS starter
 
-Save the following as `bot.cjs` in your consuming project. Set `YAPPER_SESSION`
-only for initialization; subsequent runs restore the saved replacement pair.
+Save this as **`bot.cjs`** next to your project's `package.json` and `.env`:
 
 ```js
 const path = require('node:path');
@@ -134,7 +105,7 @@ process.once('SIGTERM', () => client.destroy());
 async function main() {
   const saved = await store.load();
   const initial = process.env.YAPPER_SESSION || process.env.YAPPER_VALUE;
-  if (!saved && !initial) throw new Error('Supply an initial Yapper session.');
+  if (!saved && !initial) throw new Error('Set YAPPER_VALUE in .env for the first login.');
   await client.login(saved ?? initial);
 }
 
@@ -145,35 +116,63 @@ main().catch(error => {
 });
 ```
 
-Start with a local environment file, without adding a dotenv dependency:
+## Run your bot
+
+From your project folder:
 
 ```sh
 node --env-file=.env bot.cjs
 ```
 
-The library itself does not load that file. The explicit Node flag loads it for
-this program. Do not run a second client against the same refresh-token chain.
+Wait for `Ready as ...`. From another account, send `!ping` in a channel the bot
+can access or in a DM. The bot replies `Pong!`. Send `!help` to list the commands
+you registered. Stop with Ctrl+C; restart after changing your code or `.env`.
+
+On the first successful login, the file store saves the current session. Remove
+the first-use `YAPPER_VALUE` from `.env` afterward and keep `.env` for other
+settings. Future runs restore `.data/session.json`, including replacement
+credentials saved during refresh. See [session persistence](authentication.md#startup-and-saved-session-precedence)
+if you need to switch accounts or recover a rejected session.
+
+## What the starter does
+
+| Part | Purpose |
+| --- | --- |
+| `FileSessionStore` | Keeps credentials between runs in your project |
+| `presence: { status: 'online' }` | Sets online status and renews it every 45 seconds by default |
+| `commands.register()` | Adds the bot's `ping` command |
+| `addHelpCommand()` | Adds help for your registered commands |
+| `login(saved ?? initial)` | Uses the latest saved pair before a first-use environment value |
+| `destroy()` | Stops local connections, timers, and collectors on shutdown |
+
+The `--env-file` flag is Node's environment loader. YapperJS does not load `.env`
+or automatically read `YAPPER_VALUE`; the starter explicitly passes its value to
+`login()`. A plain `new Client()` has memory-only storage and no configured
+presence. Your project chooses those options.
 
 ## Native ESM and TypeScript
 
 Use named imports in a `.mjs` file or a project configured for ESM:
 
 ```js
+import { fileURLToPath } from 'node:url';
 import { Client, Events, FileSessionStore } from 'yapperjs';
 
 const client = new Client({
-  sessionStore: new FileSessionStore('./.data/session.json'),
+  sessionStore: new FileSessionStore(fileURLToPath(new URL('./.data/session.json', import.meta.url))),
   presence: { status: 'online' },
 });
 client.on(Events.Error, error => console.error(error.message));
 ```
 
-Install listeners and commands before calling `login()` as in the CommonJS
-starter. The package's `types` and conditional exports point TypeScript to
-`YapperJS/index.d.ts`; no separate `@types` package is supplied or required.
+Register commands and listeners and call `login()` as in the complete starter.
+This snippet shows imports and a portable session path; it is not a complete bot.
+
+TypeScript declarations ship with YapperJS; no separate `@types` package is
+required. For example:
 
 ```ts
-import { Client, Events, type CommandDefinition } from 'yapperjs';
+import { Client, type CommandDefinition } from 'yapperjs';
 
 const client = new Client();
 const ping: CommandDefinition = {
@@ -181,18 +180,19 @@ const ping: CommandDefinition = {
   async execute(ctx) { await ctx.reply('Pong!'); },
 };
 client.commands.register(ping);
-client.on(Events.MessageCreate, message => {
-  console.log(message.id, message.authorId);
-});
 ```
 
-This last fragment demonstrates typing and registration; it does not log in.
-Choose the appropriate module resolution for your consuming project. The
-library does not provide a TypeScript compiler or build pipeline.
+This fragment demonstrates typing and registration. Configure authentication
+and login as above, and compile with your project's TypeScript tooling.
 
 ## Next steps
 
-- [Configuration](configuration.md): all client options and launcher settings.
-- [Commands and events](commands-and-events.md): add commands and live behavior.
-- [API reference](api.md): messaging, caches, and manager methods.
-- [Test-bot walkthrough](test-bot.md): command-by-command checks.
+- [Commands and events](commands-and-events.md): add commands, access checks,
+  and message listeners.
+- [API reference](api.md): send messages and DMs, fetch users and history,
+  and understand managers and caches.
+- [Interactions](interactions.md): collect replies and build reaction controls.
+- [Configuration](configuration.md): set status, activity, heartbeat timing,
+  and other client options.
+- [Authentication](authentication.md): encrypted storage, token refresh,
+  and session recovery.

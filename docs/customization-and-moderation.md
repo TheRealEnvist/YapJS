@@ -205,26 +205,12 @@ Do not repeat the whole batch after partial success. Successful local deletions
 emit MessageDelete immediately and stop affected collectors. Deleting a message
 does not currently clean up its uploaded attachment objects.
 
-## Configurable sample moderation commands
+## Add moderation commands to your bot
 
-These commands belong to `npm run example`, not the smaller test bot.
-Set `YAPPER_OWNER_IDS` to authorized invoking account IDs. The bot account also
-needs the corresponding server permission. All commands below are server-only.
+Call these methods from commands you register with `client.commands`.
+Use `ownerOnly`, `guildOnly`, and `authorize(ctx)` to control who can invoke
+them. Those checks govern your application; Yapper still checks the bot account's
+server permissions. See [command authorization](commands-and-events.md#authorization).
 
-| Command | Purpose |
-| --- | --- |
-| `!deletemessage <messageId>` | Delete one message in the current channel |
-| `!purge <1-100>` | Delete recent messages in the current channel |
-| `!kick <userId>` | Kick a member |
-| `!ban <userId>` / `!unban <userId>` | Ban/unban |
-| `!timeout <userId> <minutes> [reason]` | Apply a whole-minute timeout |
-| `!nick <userId> [nickname]` | Set nickname; omit nickname to clear |
-| `!role create "Role Name" [#color]` | Create a role |
-| `!role edit <roleId> "Role Name" [#color]` | Rename/recolor |
-| `!role delete <roleId>` | Delete role |
-| `!role add <userId> <roleId>` / `!role remove <userId> <roleId>` | Assign/remove manual role |
-| `!role list` | List roles and IDs |
-
-User arguments accept raw IDs or `<@USER_ID>` mentions. `@name` strips `@` and
-still means an ID, not a username search. Built-in help hides these commands
-from authors outside the configured owner list.
+For the repository sample's prebuilt commands and their environment settings,
+see [Repository examples](examples.md#sample-moderation-commands).

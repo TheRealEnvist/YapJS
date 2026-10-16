@@ -4,8 +4,9 @@
 
 ## Client options
 
-Pass options to `new Client(options)`. These are library settings, independent of
-whether you use a supplied launcher.
+Pass options to `new Client(options)` in your application. This guide describes
+the package defaults. For the repository launchers' environment mappings, see
+[Repository examples](examples.md#environment-variable-scope).
 
 | Option | Default | Meaning |
 | --- | --- | --- |
@@ -25,8 +26,8 @@ whether you use a supplied launcher.
 | `presence` | Unconfigured | Initial status/activity; configured presence starts heartbeats |
 | `presenceInterval` | `45000` | Heartbeat interval in milliseconds; integer from 1000 through 2147483647 |
 | `commands` | Empty router with defaults below | Prefix, owners, cooldowns, and reply behavior |
-| `fetch` | `globalThis.fetch` | HTTP implementation, useful for tests |
-| `WebSocket` | `globalThis.WebSocket` | Gateway implementation, useful for tests |
+| `fetch` | `globalThis.fetch` | Optional HTTP implementation override |
+| `WebSocket` | `globalThis.WebSocket` | Optional gateway implementation override |
 
 `autoRefresh: false` disables scheduled refresh/retry timers. An authenticated
 request can still trigger an on-demand refresh when the session needs renewal.
@@ -57,79 +58,91 @@ const client = new Client({
 
 ## Command-router defaults
 
-| Option | Bare library default | Test bot default |
+| Option | Default | Purpose |
 | --- | --- | --- |
-| `prefix` | `!` | `!`, or `YAPPER_PREFIX` when started by the launcher |
-| `owners` | Empty list | Empty list unless passed through factory options |
-| `cooldown` | `0` milliseconds | `1000` milliseconds |
-| `ignoreBots` | `true` | `true` |
-| `replyOnReject` | `false` | `true` |
+| `prefix` | `!` | String, array, or function returning the accepted prefixes |
+| `owners` | Empty list | User IDs allowed to invoke owner-only commands |
+| `cooldown` | `0` milliseconds | Per-command, per-author delay; individual commands can override it |
+| `ignoreBots` | `true` | Ignore messages from known bot accounts |
+| `replyOnReject` | `false` | Send short usage, access, and cooldown replies when true |
 
-The configurable `npm run example` launcher reads `YAPPER_OWNER_IDS`. The
-`npm run bot` launcher does not: it registers no moderation commands. To use
-owner-only commands in a custom test-bot extension, pass
-`commands: { owners: ['YOUR_USER_ID'] }` to `createTestBot()`.
+Register commands yourself through `client.commands.register()` or
+`client.commands.load()`. Call `addHelpCommand()` if you want built-in help.
+See [Commands and events](commands-and-events.md).
 
 ## Environment-variable scope
 
-Only the named launchers load the repository root `.env` automatically. Existing
-process environment values take precedence under Node's loader. Changes take
-effect on restart. Ordinary library imports do not read `.env`.
+YapperJS does not load `.env`. You can load it with Node and map settings to
+options in your code:
 
-| Variable | Test bot: `npm run bot` | Configurable example: `npm run example` |
-| --- | --- | --- |
-| `YAPPER_SESSION` | First-use JSON/session input | Same |
-| `YAPPER_VALUE` | First-use encoded session input | Same |
-| `YAPPER_SESSION_KEY` | Enables encrypted session storage | Same |
-| `YAPPER_SESSION_FILE` | Custom session path | Not read |
-| `YAPPER_API_KEY` | Optional public key override | Optional public key override |
-| `YAPPER_PREFIX` | Command prefix | Command prefix |
-| `YAPPER_STATUS` | Default `online` | Presence is unconfigured unless status/activity is supplied |
-| `YAPPER_ACTIVITY` | Optional presence activity | Optional presence activity |
-| `YAPPER_ENABLE_COMMANDS` | Not read; bundled commands are registered | `0` disables bundled command registration |
-| `YAPPER_OWNER_IDS` | Not read | Comma-separated IDs for owner-only commands |
-| `YAPPER_LOG_MESSAGES` | Not read | `1` enables server-message logging |
-| `YAPPER_BIO` | Not read | Optional account bio update at startup |
-| `YAPPER_DISPLAY_NAME` | Not read | Optional display-name update |
-| `YAPPER_CUSTOM_STATUS` | Not read | Optional custom-status text update |
-| `YAPPER_PRONOUNS` | Not read | Optional pronouns update |
-| `YAPPER_ACCENT_COLOR` | Not read | Optional `#RRGGBB` accent-color update |
+```sh
+node --env-file=.env bot.cjs
+```
 
-The private-DM example reads `YAPPER_SESSION` and uses the library's API-key
-fallback, but does not load `.env` itself. It has no automatic heartbeat configured.
-`YAPPER_SESSION_KEY` is interpreted by the example launchers, not by bare `Client`.
+```js
+const client = new Client({
+  sessionStore: new FileSessionStore('./.data/session.json'),
+  commands: { prefix: process.env.YAPPER_PREFIX || '!' },
+  presence: {
+    status: process.env.YAPPER_STATUS || 'online',
+    activity: process.env.YAPPER_ACTIVITY || null,
+  },
+});
+```
+
+Here `Client` and `FileSessionStore` are imports from `yapperjs`. The application
+chooses the environment names and fallback values. `YAPPER_VALUE` and
+`YAPPER_SESSION` become login inputs only when your code passes them to `login()`.
+Likewise, encryption requires constructing `EncryptedFileSessionStore`; setting
+`YAPPER_SESSION_KEY` alone does not select a store.
+
+`YAPPER_API_KEY` is the exception: the client reads a nonempty value as its public
+project-key fallback when `options.apiKey` is omitted. Most applications can use
+the bundled public key.
+
+The separate [repository environment table](examples.md#environment-variable-scope)
+describes the mappings already implemented by the sample launchers.
 
 ## Session paths
 
-| Setup | Default file |
-| --- | --- |
-| Test bot, plaintext | Repository-root `YapperJS/session.json` |
-| Test bot, encrypted | Repository-root `YapperJS/session.enc.json` |
-| Configurable example | The same defaults as above |
-| Minimal DM example | Working-directory `.data/yapper-session.json` |
-| Bare `Client` | No file; memory only |
+A default `Client` uses memory and creates no session file. To persist a session,
+provide a store with a path in your application, outside the installed package:
 
-For the test bot, a relative `YAPPER_SESSION_FILE` is resolved against the
-repository root, even if you launch its script from another directory. An
-absolute path is used as supplied. `FileSessionStore('./relative/path')` in your
-own application resolves against that application's current working directory.
+```js
+const path = require('node:path');
+const store = new FileSessionStore(path.join(__dirname, '.data/session.json'));
+```
 
-Do not point a plaintext store at an encrypted file, or share one rotating session
-between multiple running processes. See [Authentication](authentication.md).
+In this CommonJS example, the path is anchored to the script directory.
+`FileSessionStore('./.data/session.json')` instead resolves against the process's
+current working directory. Use `fileURLToPath(new URL(..., import.meta.url))` for
+an ESM script-relative path, as shown in [Getting started](getting-started.md#native-esm-and-typescript).
+
+Use separate paths for plaintext and encrypted stores, and one independently
+authenticated session per running client. See [Authentication](authentication.md).
 
 ## Online heartbeats
 
-The test bot configures `{ status: 'online' }` by default. Login sends the initial
-heartbeat before `ClientReady`. The presence manager schedules another heartbeat
-45 seconds after the preceding operation completes, so a slow request can extend
-the interval. It uses authenticated REST and the same refresh manager as other
-requests; there is no separate heartbeat credential.
-
-A bare `Client` starts no heartbeat until you supply `presence` or call a presence
-setter after login:
+Configure presence to keep your bot marked online while it runs:
 
 ```js
-await client.user.setPresence({ status: 'online', activity: 'Testing commands' });
+const client = new Client({
+  sessionStore: new FileSessionStore('./.data/session.json'),
+  presence: { status: 'online', activity: 'Answering questions' },
+  presenceInterval: 45000,
+});
+```
+
+Login sends the initial heartbeat before `ClientReady`. The presence manager
+schedules another heartbeat 45 seconds after the preceding operation completes
+by default, so a slow request can extend the interval. It uses authenticated
+REST and the normal token refresh manager.
+
+A plain `Client` starts no heartbeat until you supply `presence` or call a
+presence setter after login:
+
+```js
+await client.user.setPresence({ status: 'online', activity: 'Answering questions' });
 await client.user.setStatus('idle');
 await client.user.setActivity('Back soon');
 await client.user.setActivity(null); // Clear activity while keeping the status.
@@ -152,9 +165,9 @@ can reject `login()`. Session invalidation and `destroy()` stop the schedule.
 
 ## Shutdown and visible offline status
 
-The provided test-bot signal handlers call `destroy()`. That stops local renewal
-immediately; the server decides when a stale online indication expires. Destroy
-does not send an explicit offline request or sign out.
+Call `client.destroy()` during shutdown to stop local renewal and close
+connections. The server decides when a stale online indication expires.
+Destroy does not send an explicit offline request or sign out.
 
 If your application needs to request offline status before shutting down:
 

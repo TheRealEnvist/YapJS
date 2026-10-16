@@ -4,6 +4,10 @@ A starter bot for trying the library in server channels and private DMs. Edit
 `bot.js` to add commands; it also reuses the reaction menus, polls, pagination,
 collectors, and profile commands from `examples/bot/commands`.
 
+To build your own bot with the installed YapperJS package, start with
+[Getting started](../../docs/getting-started.md). This README covers the optional
+repository test bot.
+
 For the full command walkthrough and extension reference, read
 [the test-bot guide](../../docs/test-bot.md). Start at
 [the documentation index](../../docs/README.md) for the library's complete API,
@@ -104,7 +108,7 @@ if the key is missing or you need details about session storage and recovery.
 The test-bot launcher does not read `YAPPER_ENABLE_COMMANDS`, `YAPPER_OWNER_IDS`,
 profile-update variables, or `YAPPER_LOG_MESSAGES`. Those belong to the separate
 `npm run example` launcher. Read the
-[environment scope table](../../docs/configuration.md#environment-variable-scope)
+[environment scope table](../../docs/examples.md#environment-variable-scope)
 before copying settings between launchers. Restart to apply environment changes.
 
 ## Online presence

@@ -65,10 +65,9 @@ menus, confirmation, pagination, polls, DMs, profile customization, and server
 management have dedicated helpers in the API. Slash commands, native buttons,
 rich embeds, file uploads, and full discord.js compatibility are not implemented.
 
-Yapper enforces API permissions. In integration testing, content edits were
-rejected with 403/42501 and a profile-table permission error; pagination edits
-one message and stops on such a failure. Client tests cannot guarantee that
-Yapper's live backend accepts every operation.
+Yapper enforces API permissions and limits. Pagination edits one message and
+stops if an update fails. See the main package's troubleshooting guide for
+authentication, permissions, and connection errors.
 
 The maintained troubleshooting, configuration, authentication, and interaction
 guides are in the canonical root package's `docs/` directory.

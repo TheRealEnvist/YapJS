@@ -2,6 +2,16 @@
 
 [Documentation index](README.md)
 
+Your bot logs in with an account session. For most applications, the setup is:
+
+1. Copy the account's encoded session from the browser once.
+2. Pass it to `client.login()` with a persistent session store configured.
+3. Restore the saved session on later runs; YapperJS saves replacement tokens
+   as it refreshes them.
+
+The [complete starter](getting-started.md#complete-commonjs-starter) implements
+this flow. The sections below explain inputs, storage choices, and recovery.
+
 ## Accepted login inputs
 
 `client.login(input)` accepts an authorized session, not a Discord bot token or
@@ -42,8 +52,9 @@ it does not coordinate multiple clients or machines.
 ## Find your bot token in the browser
 
 The value used here as a "bot token" is the account's encoded login session.
-YapperJS accepts it directly through `YAPPER_VALUE`; you do not need to decode
-it or extract the individual access and refresh tokens.
+Pass it directly to `client.login(value)`; there is no need to decode it or
+extract the individual access and refresh tokens. The starter reads it from
+an environment variable named `YAPPER_VALUE`.
 
 1. Open Yapper on the web and sign in to the account you want to run as the bot.
 2. Open the browser's developer tools. In Chrome or Edge on Windows, press
@@ -55,30 +66,30 @@ it or extract the individual access and refresh tokens.
    filter to search for that key.
 6. Copy the complete **Value** for that entry, rather than the key name. Keep
    the encoded value unchanged.
-7. Put it in the repository root `.env` file:
+7. Put it in `.env` in **your bot project's folder**:
 
    ```dotenv
    YAPPER_VALUE='PASTE_THE_COMPLETE_yp:1n00fw_VALUE_HERE'
    ```
 
-8. Close that account's Yapper browser tabs before starting the bot with
-   `npm run bot` (or `npm.cmd run bot` in PowerShell). Avoid running the browser
-   and bot against that same session at the same time.
+8. Close that account's Yapper browser tabs before starting your bot. With the
+   [starter](getting-started.md#complete-commonjs-starter), run
+   `node --env-file=.env bot.cjs`. Use one running client for that session.
 
 The copied value contains login credentials even though it is encoded. Keep it
-private and out of source control. After successful initialization, the bot saves
-the current session pair; remove the first-use `YAPPER_VALUE` from `.env` and let
-subsequent runs restore the saved session.
+private and out of source control. With a persistent `sessionStore` configured,
+YapperJS saves the current pair. Remove the first-use `YAPPER_VALUE` from `.env`
+after successful initialization and let subsequent runs restore the store.
 
 If `yp:1n00fw` is missing, confirm that login completed and that you selected
 the storage origin for the current Yapper tab. Storage is separate for each
-origin and browser profile. If both initialization variables are set,
-`YAPPER_SESSION` takes precedence over `YAPPER_VALUE`; an existing saved session
-takes precedence over both in the example launchers.
+origin and browser profile. The starter below prefers a saved session, then
+`YAPPER_SESSION`, then `YAPPER_VALUE`. Those environment names and that precedence
+are choices made by your application, rather than automatic library behavior.
 
 ## Startup and saved-session precedence
 
-The example launchers deliberately prefer the store's latest replacement pair:
+Prefer the store's latest replacement pair when starting your application:
 
 ```js
 const saved = await store.load();
@@ -123,8 +134,9 @@ POSIX modes where supported. Windows access is governed by filesystem ACLs;
 POSIX mode bits do not establish an owner-only NTFS ACL. The file is plaintext,
 so use encrypted storage if that is required for your deployment.
 
-The repository ignores its standard session filenames and `.data/`. Choosing a
-different custom path does not automatically add that path to `.gitignore`.
+Add the chosen session path to your project's `.gitignore`. The starter keeps
+the file under `.data/` and ignores that directory; a different custom path needs
+its own ignore rule.
 
 `load()` returns a session or `null` when the file is missing. Invalid JSON or
 storage errors raise `SessionStorageError`. `clear()` removes that store's file.

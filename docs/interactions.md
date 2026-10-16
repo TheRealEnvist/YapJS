@@ -213,9 +213,10 @@ local state maintained from received events, not a durable tally replayed after
 disconnects. `results()` returns current `{ label, emoji, votes }` entries.
 
 By default, the library edits the poll message with final results. Set
-`updateOnEnd: false` to handle results yourself. The sample `!poll` command uses
-that setting and posts a separate result reply so it works when edits are denied.
-It suppresses that reply when the relevant message/channel/server/client is gone.
+`updateOnEnd: false` to handle results yourself, as in the example above. You can
+store the returned results or send your own summary after `poll.finished`
+resolves. This avoids an automatic content edit if your application wants a
+separate result message.
 
 ## Reaction roles
 

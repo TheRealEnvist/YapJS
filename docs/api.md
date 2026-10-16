@@ -7,6 +7,27 @@ valid missing IDs resolve to `null`; invalid arguments or API failures throw.
 Mutations require the authenticated account's permissions. This reference uses
 JavaScript property names, which can differ from Yapper's database field names.
 
+## Find the right object
+
+| Task | Start with |
+| --- | --- |
+| Log in, check readiness, or shut down | [Client](#client) |
+| Find an entity by ID or refresh cached data | [Fetch patterns](#fetch-patterns) |
+| Read a profile or get an avatar URL | [Users and ClientUser](#users-and-clientuser) |
+| Send to a channel or open a DM | [Channels and direct messages](#channels-and-direct-messages) |
+| Reply, edit, delete, react, or read history | [Messages and message history](#messages-and-message-history) |
+| Work with servers, members, roles, or bans | [Servers, members, roles, and bans](#servers-members-roles-and-bans) |
+| Handle a failed request or use a lower-level endpoint | [REST and errors](#rest-and-errors) |
+
+Managers such as `client.channels` find and cache objects. A returned `Channel`
+represents one channel and provides actions such as `send()`. That action returns
+a `Message`, which provides `reply()`, `edit()`, `delete()`, and `react()`.
+`Collection` is the Map-like container returned by many list and history methods.
+
+If you have not created an authenticated client yet, follow
+[Getting started](getting-started.md) first. Short snippets here assume that client
+already exists and run inside an async function or ES module.
+
 ## Client
 
 Construct with `new Client(options)`. `Yapper` is an alias for `Client`. See

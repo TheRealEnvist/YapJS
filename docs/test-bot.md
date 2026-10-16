@@ -17,7 +17,8 @@ but running the included bot requires the source checkout.
 
 In PowerShell use `npm.cmd` if script execution policy blocks `npm.ps1`. All
 commands run from the repository root. There are no runtime dependencies to
-install for this checkout. [Getting started](getting-started.md) covers first use.
+install for this checkout. To build your own bot with the package, follow
+[Getting started](getting-started.md).
 
 ## First live run
 
@@ -54,7 +55,7 @@ The bot sends its initial presence heartbeat during login and renews it every
 45 seconds. Status/activity overrides are honored. Shutdown stops the timer.
 The test-bot launcher does not read the configurable example's owner IDs,
 command-enable flag, profile-update variables, or message-logging flag.
-[Configuration](configuration.md#environment-variable-scope) compares both launchers.
+[Repository examples](examples.md#environment-variable-scope) compares both launchers.
 
 ## Command reference
 
